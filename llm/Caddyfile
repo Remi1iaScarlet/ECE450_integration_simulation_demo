@@ -1,0 +1,18 @@
+# Caddy configuration for robot.mumoiscat.site
+# Place this file at /etc/caddy/Caddyfile on your server
+
+robot.mumoiscat.site {
+    # Automatic HTTPS with Let's Encrypt
+
+    # Reverse proxy to FastAPI backend
+    reverse_proxy 127.0.0.1:8000
+
+    # Enable gzip compression
+    encode gzip
+
+    # Logging
+    log {
+        output file /var/log/caddy/robot-access.log
+        format json
+    }
+}

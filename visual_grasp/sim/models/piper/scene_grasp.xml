@@ -1,0 +1,76 @@
+<mujoco model="piper_grasp_scene">
+  <!-- Sibling of piper.xml so meshdir="assets" resolves. Adds a table, a bottle,
+       a cup, lighting, ground, and a fixed world camera. The wrist camera lives in
+       piper.xml (link6). Objects are free bodies so they can be grasped later. -->
+  <include file="piper.xml"/>
+
+  <statistic center="0.35 0 0.18" extent="0.8"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.35 0.35 0.35" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="140" elevation="-25" offwidth="1280" offheight="720"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.0"/>
+    <material name="table_mat" rgba="0.55 0.38 0.22 1" reflectance="0.0"/>
+    <material name="bottle_mat" rgba="0.15 0.5 0.2 0.95"/>
+    <material name="cap_mat" rgba="0.85 0.75 0.2 1"/>
+    <material name="cup_mat" rgba="0.92 0.92 0.95 1"/>
+    <material name="cup_inner_mat" rgba="0.42 0.43 0.46 1"/>
+    <material name="cup_shadow_mat" rgba="0.12 0.13 0.15 1"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0.35 0 1.6" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+
+    <!-- low table in front of the arm; top surface at z = 0.10 + 0.02 = 0.12 -->
+    <body name="table" pos="0.42 0 0">
+      <geom name="table_top" type="box" size="0.22 0.30 0.02" pos="0 0 0.10" material="table_mat"/>
+      <geom name="table_ped" type="box" size="0.06 0.06 0.05" pos="0 0 0.05" material="table_mat"/>
+    </body>
+
+    <!-- bottle: slimmer/taller water-bottle shape: body + neck + cap.
+         body half-height 0.075 => rest center at 0.12+0.075=0.195 -->
+    <body name="bottle" pos="0.38 0.11 0.20">
+      <freejoint/>
+      <geom name="bottle_body" type="cylinder" size="0.028 0.075" material="bottle_mat"
+        friction="1 0.05 0.001"/>
+      <geom name="bottle_neck" type="cylinder" size="0.012 0.022" pos="0 0 0.095" material="bottle_mat"/>
+      <geom name="bottle_cap" type="cylinder" size="0.013 0.012" pos="0 0 0.127" material="cap_mat"/>
+    </body>
+
+    <!-- cup: graspable mug-like model. The main cylinder remains the physical
+         collision/mass body; extra zero-contact geoms add rim, inner shadow, and
+         handle so YOLO sees a cup instead of a plain cylinder. -->
+    <body name="cup" pos="0.38 -0.11 0.17">
+      <freejoint/>
+      <geom name="cup_body_collision" type="cylinder" size="0.026 0.045" material="cup_mat"
+        density="235" friction="1.5 0.1 0.01"/>
+      <geom name="cup_rim" type="cylinder" size="0.029 0.004" pos="0 0 0.045"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_opening" type="cylinder" size="0.021 0.002" pos="0 0 0.050"
+        material="cup_shadow_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_inner_wall" type="cylinder" size="0.022 0.030" pos="0 0 0.016"
+        material="cup_inner_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_handle_upper" type="capsule" size="0.004"
+        fromto="-0.024 0 0.025 -0.046 0 0.025"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_handle_lower" type="capsule" size="0.004"
+        fromto="-0.024 0 -0.015 -0.046 0 -0.015"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_handle_outer" type="capsule" size="0.004"
+        fromto="-0.046 0 -0.015 -0.046 0 0.025"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- fixed world camera, auto-aimed at the table region. Top-ish framing gives the
+         best/most-reliable YOLO cup detection (~0.77) and good depth geometry. -->
+    <camera name="world_cam" pos="0.45 -0.60 0.55" mode="targetbody" target="table" fovy="52"/>
+  </worldbody>
+</mujoco>

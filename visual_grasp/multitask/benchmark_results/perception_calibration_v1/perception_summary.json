@@ -1,0 +1,116 @@
+{
+  "suite": "perception_calibration",
+  "spec": {
+    "target_label": "bottle",
+    "confidence_thresholds": [
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3
+    ],
+    "positive_repeats": 10,
+    "negative_cases": 50,
+    "interior_y_max_m": 0.01,
+    "boundary_y_m": 0.02,
+    "seed": 20260713,
+    "model": "piper_real"
+  },
+  "production_threshold_before": 0.3,
+  "threshold_metrics": [
+    {
+      "threshold": 0.1,
+      "positive_cases": 250,
+      "detected_cases": 236,
+      "recall_pct": 94.4,
+      "negative_cases": 50,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 3.861,
+      "xy_error_p95_mm": 8.735,
+      "z_bias_mean_mm": 52.879,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 237.49,
+      "gate_passed": false
+    },
+    {
+      "threshold": 0.15,
+      "positive_cases": 250,
+      "detected_cases": 232,
+      "recall_pct": 92.8,
+      "negative_cases": 50,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 3.786,
+      "xy_error_p95_mm": 8.506,
+      "z_bias_mean_mm": 52.844,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 237.49,
+      "gate_passed": false
+    },
+    {
+      "threshold": 0.2,
+      "positive_cases": 250,
+      "detected_cases": 227,
+      "recall_pct": 90.8,
+      "negative_cases": 50,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 3.692,
+      "xy_error_p95_mm": 8.142,
+      "z_bias_mean_mm": 52.8,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 237.49,
+      "gate_passed": false
+    },
+    {
+      "threshold": 0.25,
+      "positive_cases": 250,
+      "detected_cases": 214,
+      "recall_pct": 85.6,
+      "negative_cases": 50,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 3.561,
+      "xy_error_p95_mm": 7.812,
+      "z_bias_mean_mm": 52.66,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 237.49,
+      "gate_passed": false
+    },
+    {
+      "threshold": 0.3,
+      "positive_cases": 250,
+      "detected_cases": 207,
+      "recall_pct": 82.8,
+      "negative_cases": 50,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 3.452,
+      "xy_error_p95_mm": 7.6,
+      "z_bias_mean_mm": 52.556,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 237.49,
+      "gate_passed": false
+    }
+  ],
+  "gate": {
+    "passed": false,
+    "selected_threshold": null,
+    "requirements": {
+      "recall_pct_min": 95.0,
+      "false_positive_rate_pct_max": 2.0,
+      "xy_error_p95_mm_max": 10.0
+    }
+  },
+  "boundary_diagnostic": {
+    "cases": 50,
+    "detected_cases": 42,
+    "detection_rate_pct": 84.0,
+    "odd_rejection_cases": 28,
+    "odd_rejection_rate_pct": 66.67,
+    "xy_error_p95_mm": 5.666
+  },
+  "wall_clock_s": 183.85,
+  "production_config_modified": false
+}

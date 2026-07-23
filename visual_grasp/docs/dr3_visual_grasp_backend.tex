@@ -1,0 +1,365 @@
+% DR3 replacement text for the visual_grasp robot-operation backend.
+% Author/responsible team member: Runhan Wang.
+%
+% Intended use:
+%   1. Replace the current report subsections
+%      "Inverse Kinematics and Motion Planning" and
+%      "MuJoCo and Piper Robotic-Arm Platform" with this file.
+%   2. The report preamble already loads amsmath, amssymb, longtable,
+%      booktabs, array, graphicx, and url, which are sufficient here.
+%   3. Do NOT copy the host-side task-duration values into the
+%      OpenHarmony-to-host communication-latency table. They measure
+%      different system boundaries.
+%
+% Suggested replacements in the earlier Current DR3 Status table:
+% Inverse kinematics and robot model & Completed and regression-tested &
+% Runhan Wang: DH-based Piper FK/IK, DH-matched MuJoCo model, and
+% 483/500 no-warm-start IK regression cases solved. \\
+% MuJoCo visual-grasp backend & Completed for simulation; perception
+% robustness characterized & Runhan Wang: structured multi-task executor,
+% YOLO/RGB-D and sim_gt perception backends, motion-plan validation, and
+% machine-readable benchmark outputs. \\
+% Physical Piper backend & Implemented and offline-tested; hardware acceptance
+% pending & Runhan Wang: feedback-guarded continuous-waypoint backend and
+% double authorization gate; no CAN/SDK motion or physical-arm acceptance is
+% claimed. \\
+%
+% Suggested owner-table replacement:
+% Simulation/physical demo hardening & Runhan Wang \\
+
+\subsection{Inverse Kinematics and Motion Planning}
+\label{sec:visual-grasp-ik-motion}
+
+The robot-operation backend is implemented in the \texttt{visual\_grasp}
+repository and is responsible for converting a bounded task command into
+perception, inverse kinematics (IK), a validated motion plan, and either
+MuJoCo execution or an explicitly gated Piper-hardware execution request.
+The backend does not own the OpenHarmony transport, ROS~1--ROS~2 topic
+mapping, or network-latency measurement. Its external command boundary is a
+versioned JSON schema, \texttt{visual\_grasp.bridge.v1}.
+
+\subsubsection{Kinematic model}
+
+The manipulator is the six-degree-of-freedom AgileX Piper with a parallel
+gripper.  The implementation uses the following homogeneous transform for
+joint~$i$:
+
+\begin{equation}
+{}^{i-1}\!A_i =
+\begin{bmatrix}
+\cos\theta_i & -\sin\theta_i & 0 & a_i \\
+\cos\alpha_i\sin\theta_i & \cos\alpha_i\cos\theta_i & -\sin\alpha_i & -d_i\sin\alpha_i \\
+\sin\alpha_i\sin\theta_i & \sin\alpha_i\cos\theta_i & \cos\alpha_i & d_i\cos\alpha_i \\
+0 & 0 & 0 & 1
+\end{bmatrix},
+\qquad
+\theta_i=q_i+\theta_{i,\mathrm{off}} .
+\label{eq:piper-dh-transform}
+\end{equation}
+
+The base-to-link-6 forward kinematics are
+
+\begin{equation}
+{}^{0}\!T_6(\mathbf q)=\prod_{i=1}^{6}{}^{i-1}\!A_i(q_i).
+\label{eq:piper-fk}
+\end{equation}
+
+Table~\ref{tab:piper-dh} lists the parameters used by
+\texttt{piper\_arm.py}. Lengths are in metres; angular values are shown as
+multiples of $\pi$ or in degrees to match the implemented constants.
+
+\begin{longtable}{@{}ccccc@{}}
+\caption{Piper kinematic parameters implemented by the robot backend.}
+\label{tab:piper-dh}\\
+\toprule
+$i$ & $\alpha_i$ & $a_i$ & $d_i$ & $\theta_{i,\mathrm{off}}$ \\
+\midrule
+\endfirsthead
+\toprule
+$i$ & $\alpha_i$ & $a_i$ & $d_i$ & $\theta_{i,\mathrm{off}}$ \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+1 & $0$ & $0$ & $0.12300$ & $0$ \\
+2 & $-\pi/2$ & $0$ & $0$ & $-172.2135102^\circ$ \\
+3 & $0$ & $0.28503$ & $0$ & $-102.7827493^\circ$ \\
+4 & $\pi/2$ & $-0.02198$ & $0.25075$ & $0$ \\
+5 & $-\pi/2$ & $0$ & $0$ & $0$ \\
+6 & $\pi/2$ & $0$ & $0$ & $0$ \\
+\end{longtable}
+
+The task-space point used for grasping is the midpoint between the finger
+pads, located $0.06$~m along the link-6 $z$ axis.  Candidate IK solutions are
+accepted only when their forward-kinematics residuals satisfy
+
+\begin{align}
+e_p &= \left\|\mathbf p_{\mathrm{FK}}-\mathbf p_{\mathrm{target}}\right\|_2
+      < 2\ \mathrm{mm}, \\
+e_R &= \cos^{-1}\!\left(\frac{\operatorname{tr}
+      (R_{\mathrm{FK}}^{T}R_{\mathrm{target}})-1}{2}\right)
+      < 0.01\ \mathrm{rad}.
+\label{eq:piper-ik-residuals}
+\end{align}
+
+The original analytic solver evaluated only one shoulder/elbow branch.  The
+revised solver enumerates shoulder, elbow, and wrist branches, rejects joint
+limit violations, verifies every candidate using Eq.~\ref{eq:piper-ik-residuals},
+and applies a damped DH-Jacobian numerical refinement when no closed-form
+candidate passes.  A 500-case reachable-pose regression improved from 79\%
+for the original single branch, to 89\% after branch enumeration, and to
+483/500 (96.6\%, reported as 97\%) with the numerical fallback.  Because this
+solver depends on the DH model rather than MuJoCo, the same implementation can
+be used by both the DH-matched simulation model and the future physical Piper
+planner.
+
+The \texttt{piper\_real} MuJoCo model was generated from the official Piper
+URDF and mesh assets in the ROS~Noetic branch of \texttt{piper\_ros}
+(Reference~[16]). Across the checked configurations, the DH and MuJoCo link-6
+frames agreed to within 0.09~mm. This removes the approximately 10~mm
+kinematic mismatch observed when the community Menagerie model was driven by
+the real-robot DH parameters (Reference~[18]).
+
+\subsubsection{Motion-plan contract and execution semantics}
+
+The planner returns a dependency-light \texttt{MotionPlan} rather than
+issuing actuator commands directly. Its public structure is
+
+\begin{center}
+\texttt{start\_q $\rightarrow$ segments $\rightarrow$ waypoints[].q}.
+\end{center}
+
+Each segment has an explicit phase, including \texttt{TRANSIT},
+\texttt{PRE\_APPROACH}, \texttt{FINAL\_APPROACH}, \texttt{CLOSING}, and
+\texttt{LIFT}.  The plan also stores collision provenance through
+\texttt{CollisionTrace}, including the phase, segment, interpolation sample,
+contacting geometry, collision category, and rejection reason. Collision
+checking includes segment endpoints and adaptively subdivided samples, with a
+maximum joint interpolation step of 0.05~rad.
+
+Planning and execution use the same saved joint waypoints. The executor does
+not silently re-solve IK or skip a waypoint after validation. It rejects a
+plan before motion when the observed start state differs from
+\texttt{motion\_plan.start\_q}, when a segment seam is discontinuous, or when
+the plan contains an invalid joint vector. This preserves the meaning of the
+collision and feasibility checks performed during planning.
+
+At task level, \texttt{TaskExecutor} implements four bounded operations:
+\texttt{pick}, \texttt{place\_at}, \texttt{place\_into}, and
+\texttt{clear\_table}.  A task progresses through an explicit finite-state
+machine. For example, a container placement uses
+
+\begin{equation*}
+\begin{split}
+\texttt{DETECT\_SOURCE} &\rightarrow \texttt{PLAN\_PICK}
+\rightarrow \texttt{EXECUTE\_PICK}
+\rightarrow \texttt{VERIFY\_GRASP} \\
+&\rightarrow \texttt{DETECT\_TARGET}
+\rightarrow \texttt{PLAN\_PLACE}
+\rightarrow \texttt{EXECUTE\_PLACE}
+\rightarrow \texttt{VERIFY\_DONE}.
+\end{split}
+\end{equation*}
+
+Every state returns a structured result containing success, message, reason,
+and duration. A failed grasp can trigger only a bounded recovery loop; the
+pipeline otherwise stops at the first failed state and preserves the failure
+provenance in JSON and CSV evidence.
+
+\subsection{MuJoCo and Visual-Grasp Robot Backend}
+\label{sec:visual-grasp-backend}
+
+\subsubsection{Perception and simulation architecture}
+
+The simulation uses MuJoCo~3.10.0 (Reference~[8]) with a 2~ms physics timestep
+(500~Hz).  The
+scene contains the Piper arm, a table, and textured cup, bottle, and bowl
+models based on the YCB object set (Reference~[19]). Two cameras are supported:
+a fixed world camera for eye-to-hand
+perception and a wrist-mounted camera for eye-in-hand perception.  Both expose
+known extrinsic transformations in simulation; the physical system will
+replace these known transforms with independently verified camera
+calibration.
+
+The backend provides two perception modes with deliberately different roles:
+
+\begin{itemize}
+\item \texttt{sim\_gt} reads the object pose from MuJoCo and isolates the
+      manipulation, IK, planning, and execution chain from perception error;
+\item \texttt{yolo} detects the object in rendered RGB, uses the aligned depth
+      image to estimate a three-dimensional centre, and transforms the centre
+      into the robot base frame. A YOLO failure is reported as a failure and
+      never falls back silently to \texttt{sim\_gt}.
+\end{itemize}
+
+The command bridge validates and normalizes the external JSON before
+dispatch. The principal fields are shown in Table~\ref{tab:backend-command}.
+
+\begin{longtable}{@{}
+>{\raggedright\arraybackslash}p{0.25\linewidth}
+>{\raggedright\arraybackslash}p{0.66\linewidth}@{}}
+\caption{Implemented \texttt{visual\_grasp.bridge.v1} command fields.}
+\label{tab:backend-command}\\
+\toprule
+Field & Implemented meaning \\
+\midrule
+\endfirsthead
+\toprule
+Field & Implemented meaning \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\texttt{task} & \texttt{pick}, \texttt{place\_at},
+\texttt{place\_into}, or \texttt{clear\_table} \\
+\texttt{source\_label}, \texttt{container\_label},
+\texttt{labels}, \texttt{target\_xyz} & Task-dependent object and target
+arguments with required-field and shape validation \\
+\texttt{backend} & \texttt{sim\_mujoco} or \texttt{real\_piper} \\
+\texttt{model} & Menagerie model or the DH-matched
+\texttt{piper\_real} model \\
+\texttt{perception} & \texttt{yolo} or \texttt{sim\_gt};
+\texttt{real\_piper} rejects \texttt{sim\_gt} \\
+\texttt{policy}, \texttt{speed} & Bounded grasp-policy and motion-speed
+selection \\
+\texttt{armed} & First explicit hardware opt-in; physical dispatch also
+requires an independent API/CLI authorization \\
+\end{longtable}
+
+Dry-run validation is intentionally dependency-light: it does not import
+MuJoCo, load a camera, construct a Piper SDK object, connect CAN, or move the
+robot. Consequently, a successful dry run proves only schema validation and
+dispatch selection.
+
+\subsubsection{Quantitative simulation evidence}
+
+Table~\ref{tab:backend-fixed-benchmark} reports a fixed-case
+\texttt{place\_into} benchmark for a cup at $(x,y)=(0.38,-0.11)$~m. Both
+backends used the DH-matched model and random seed 20260712. Task duration is
+measured on the host from the first task state to the terminal task state. It
+is not OpenHarmony, HDC, DDS, or ROS-bridge latency.
+
+\begin{longtable}{@{}
+>{\raggedright\arraybackslash}p{0.29\linewidth}rr@{}}
+\caption{Fixed-case 100-trial cup placement benchmark.}
+\label{tab:backend-fixed-benchmark}\\
+\toprule
+Metric & \texttt{sim\_gt} & YOLO/RGB-D \\
+\midrule
+\endfirsthead
+\toprule
+Metric & \texttt{sim\_gt} & YOLO/RGB-D \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Successful trials & 100/100 & 100/100 \\
+Mean task duration (ms) & 1300.09 & 1857.06 \\
+P95 task duration (ms) & 1322.52 & 1895.53 \\
+Mean detection duration (ms) & 0.20 & 559.45 \\
+P95 detection duration (ms) & 0.30 & 576.47 \\
+Mean source-centre error (mm) & 0.00 & 6.10 \\
+Mean lift height (mm) & 127.50 & 127.40 \\
+Mean placement error (mm) & 29.50 & 28.30 \\
+\end{longtable}
+
+Because a single fixed pose does not establish workspace robustness, the
+backend was also evaluated on bottle-position grids. A successful grasp
+required a lift of at least 30~mm. Table~\ref{tab:backend-grid-benchmark}
+reports the two relevant suites separately so that their different domains
+and denominators are not conflated.
+
+\begin{longtable}{@{}
+>{\raggedright\arraybackslash}p{0.32\linewidth}
+>{\raggedright\arraybackslash}p{0.16\linewidth}
+>{\raggedright\arraybackslash}p{0.17\linewidth}
+>{\raggedright\arraybackslash}p{0.25\linewidth}@{}}
+\caption{Bottle perception-to-grasp grid evidence.}
+\label{tab:backend-grid-benchmark}\\
+\toprule
+Suite & \texttt{sim\_gt} & YOLO/RGB-D & Interpretation \\
+\midrule
+\endfirsthead
+\toprule
+Suite & \texttt{sim\_gt} & YOLO/RGB-D & Interpretation \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Calibrated perception-to-grasp grid, 200 YOLO trials &
+250/250 (100\%) & 191/200 (95.5\%) &
+The calibrated suite passed its stated target; the YOLO Wilson 95\% interval
+was 91.67--97.61\%. All nine failures occurred in
+\texttt{DETECT\_SOURCE}. \\
+Expanded $5\times5$ grid, ten repeats per cell &
+250/250 (100\%) & 184/250 (73.6\%) &
+Exact localization isolated a reliable manipulation chain, while the broader
+YOLO evaluation did not meet the 85\% target. Its Wilson 95\% interval was
+67.81--78.68\%, with 66 failures at \texttt{DETECT\_SOURCE}. \\
+\end{longtable}
+
+These results support a narrower conclusion than ``the complete visual grasp
+system is 100\% successful.'' Under exact simulated localization, the
+DH-matched IK, grasp planning, and MuJoCo execution chain completed all 250
+expanded-grid trials. The broader camera-driven result was limited by target
+detection and operating-domain rejection rather than by a demonstrated IK or
+trajectory failure. Therefore, perception robustness remains open work and
+the 73.6\% expanded-grid result must not be hidden by the 100/100 fixed-case
+demonstration.
+
+The machine-readable evidence used for these claims is:
+
+\begin{itemize}
+\item \path{multitask/benchmark_results_presentation/real_sim_gt_100_summary.json}
+      and its trial CSV;
+\item \path{multitask/benchmark_results_presentation/real_yolo_100_summary.json}
+      and its trial CSV;
+\item \path{multitask/benchmark_results/perception_e2e_v1/perception_e2e_summary.json}
+      and its trial CSV;
+\item \path{multitask/benchmark_results/bottle_heatmap_final_v8/summary.json}
+      and its trial CSV.
+\end{itemize}
+
+\subsubsection{Physical Piper execution boundary}
+
+The physical-control seam is implemented by a dependency-injected real-task
+executor and a feedback-guarded \texttt{PiperHardwareBackend}. It reuses the neutral
+\texttt{MotionPlan} contract and executes continuous joint-waypoint
+polylines without re-solving IK. The backend rejects missing or stale
+feedback, joint-limit violations, non-finite commands, start-state mismatch,
+segment discontinuity, excessive requested or observed speed, following
+error, robot fault/stop state, and waypoint timeout. Gripper actuation is an
+explicit command and is not hidden inside ordinary waypoint execution.
+
+Physical dispatch uses two independent opt-in gates: the normalized command
+must contain \texttt{armed=true}, and the calling API or CLI must separately
+set \texttt{allow\_hardware=true}. These gates issue an opaque authorization
+capability that is required at the backend and SDK-adapter boundaries. Import,
+construction, and dry-run paths do not connect hardware.
+
+In the current checkout, 24 bridge-contract tests and 43 Piper-backend safety
+tests pass (67/67 total). These tests use fakes or SDK-shaped stubs and verify
+the software contract, cleanup, authorization, feedback, trajectory, and
+fail-closed behaviour. They do \emph{not} prove CAN communication, physical
+camera calibration, collision clearance around a real table, or safe motion
+of the laboratory Piper. Moreover, the default SDK path cannot prove fresh
+timestamps independently for all three joint pairs and therefore fails closed
+with \texttt{JOINT\_FRESHNESS\_UNPROVEN}. Physical-arm acceptance remains
+pending until the SDK/firmware interface, independent feedback freshness,
+low-speed motion, emergency stop, and calibrated perception have been tested
+on the actual platform.
+
+\subsubsection{Backend-specific completion statement}
+
+For DR3, the defensible status is therefore:
+
+\begin{quote}
+The \texttt{visual\_grasp} robot-operation backend is implemented and
+quantitatively validated in MuJoCo, including DH-matched IK, bounded task
+execution, structured command validation, and machine-readable benchmark
+evidence. The feedback-guarded physical Piper execution seam is implemented
+and passes offline safety tests, but physical-arm operation has not been
+accepted and is not claimed as complete. The latest broad YOLO grid remains
+below the 85\% target, so camera-driven perception robustness is retained as
+an explicit limitation rather than being reported as a completed result.
+\end{quote}

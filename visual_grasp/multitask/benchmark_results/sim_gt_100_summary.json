@@ -1,0 +1,34 @@
+{
+  "backend": "sim_gt",
+  "trials": 100,
+  "seed": 20260712,
+  "successes": 81,
+  "success_rate_pct": 81.0,
+  "dr1_pick_place_target_pct": 85.0,
+  "dr1_success_target_met": false,
+  "mean_task_duration_ms": 276.77,
+  "p95_task_duration_ms": 352.52,
+  "mean_detect_source_ms": 0.27,
+  "p95_detect_source_ms": 0.4,
+  "mean_source_center_error_mm": 0.0,
+  "p95_source_center_error_mm": 0.0,
+  "mean_placement_error_mm": 35.41,
+  "p95_placement_error_mm": 18.84,
+  "mean_lift_height_mm": 94.52,
+  "wall_clock_s": 29.77,
+  "test_region": {
+    "cup_x_m": [
+      0.34,
+      0.42
+    ],
+    "cup_y_m": [
+      -0.16,
+      -0.06
+    ]
+  },
+  "notes": [
+    "Task latency is host-side simulated task execution time, not DR1 ROS2/HDC bridge latency.",
+    "sim_gt isolates manipulation control; yolo exercises YOLO plus RGB-D localization.",
+    "Only MuJoCo is tested, so the DR1 Gazebo/MuJoCo engine-delta criterion is not assessed."
+  ]
+}

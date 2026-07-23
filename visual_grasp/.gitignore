@@ -1,0 +1,10 @@
+__pycache__
+.python_deps/
+.conda_env/
+.conda_pkgs/
+.conda_pkgs:/
+.ros/
+.cache/
+MUJOCO_LOG.TXT
+.kimi-requests/
+.DS_Store

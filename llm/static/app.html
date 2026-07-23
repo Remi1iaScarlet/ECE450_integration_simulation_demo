@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robot Command</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .command-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .command-input:focus {
+            outline: 2px solid #4CAF50;
+        }
+
+        .send-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .quick-commands {
+            margin-bottom: 20px;
+        }
+
+        .quick-commands h3 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .quick-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .quick-btn {
+            padding: 8px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .result-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            display: none;
+        }
+
+        .result-section.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.pending {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-badge.rejected {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .result-item {
+            margin-bottom: 12px;
+        }
+
+        .result-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .result-value.intent {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .history-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .history-link a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Robot Command</h1>
+        <p class="subtitle">Enter a natural language command for the robotic arm</p>
+
+        <div class="input-section">
+            <input
+                type="text"
+                class="command-input"
+                id="commandInput"
+                placeholder="e.g., move the arm upward"
+                autocomplete="off"
+            >
+            <button class="send-btn" id="sendBtn" onclick="sendCommand()">
+                Send Command
+            </button>
+        </div>
+
+        <div class="quick-commands">
+            <h3>Quick Commands</h3>
+            <div class="quick-btns">
+                <button class="quick-btn" onclick="setCommand('show robot status')">Status</button>
+                <button class="quick-btn" onclick="setCommand('go to ready pose')">Ready</button>
+                <button class="quick-btn" onclick="setCommand('open the gripper')">Open</button>
+                <button class="quick-btn" onclick="setCommand('close the gripper')">Close</button>
+                <button class="quick-btn" onclick="setCommand('move up a little')">Move Up</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Processing command...</p>
+        </div>
+
+        <div class="result-section" id="resultSection">
+            <div class="result-header">
+                <span>Result:</span>
+                <span class="status-badge" id="statusBadge">pending</span>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Your Command</div>
+                <div class="result-value" id="resultTranscript"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Detected Intent</div>
+                <div class="result-value intent" id="resultIntent"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Service Command</div>
+                <div class="result-value" id="resultService"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Reason</div>
+                <div class="result-value" id="resultReason"></div>
+            </div>
+        </div>
+
+        <div class="history-link">
+            <a href="/queue">View Command Queue →</a>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

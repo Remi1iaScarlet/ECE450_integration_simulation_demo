@@ -1,0 +1,12 @@
+<launch>
+  <arg name="rviz_config" default="$(env VISUAL_GRASP_ROOT)/config/piper_ctrl.rviz" />
+  <param
+    name="robot_description"
+    textfile="$(find piper_description)/urdf/piper_description.xacro" />
+
+  <node
+    name="rviz"
+    pkg="rviz"
+    type="rviz"
+    args="-d $(arg rviz_config)" />
+</launch>

@@ -1,0 +1,49 @@
+<mujoco model="piper_multitask_scene">
+  <!-- Multitask scene = the validated single-grasp scene + a real textured bowl
+       (YCB 024_bowl, a photo-scanned ceramic bowl). Kept separate from
+       scene_grasp.xml so the validated single-object grasp scripts are unaffected.
+       The textured YCB bowl is what makes COCO-YOLO actually detect a 'bowl'
+       (an untextured synthetic bowl is not recognized -- see DEVLOG). The multitask
+       registry uses a multi-pose scan to detect the cup and the bowl separately. -->
+  <include file="scene_grasp.xml"/>
+
+  <asset>
+    <mesh name="bowl_ycb" file="bowl_ycb.obj"/>
+    <texture name="bowl_ycb_tex" type="2d" file="assets/bowl_ycb.png"/>
+    <material name="bowl_ycb_mat" texture="bowl_ycb_tex" specular="0.3" shininess="0.4"/>
+    <!-- graspable bottle: textured YCB 006_mustard_bottle, scaled to 0.6 so its
+         narrow axis (40 mm) fits the 70 mm gripper. Detected as 'bottle' ~0.85. -->
+    <mesh name="bottle_ycb" file="bottle_ycb.obj" scale="0.6 0.6 0.6"/>
+    <texture name="bottle_ycb_tex" type="2d" file="assets/bottle_ycb.png"/>
+    <material name="bottle_ycb_mat" texture="bottle_ycb_tex" specular="0.2" shininess="0.3"/>
+  </asset>
+
+  <worldbody>
+    <!-- bowl: static place-target container. Visual = textured YCB mesh (recenters
+         the off-origin mesh so the bowl center sits at the body xy and the base
+         rests on the table top, z=0.12). Collision = a thin floor disk inside the
+         bowl so a released cup settles inside near the center. -->
+    <body name="bowl" pos="0.50 0.0 0">
+      <geom name="bowl_visual" type="mesh" mesh="bowl_ycb" material="bowl_ycb_mat"
+        pos="0.015 0.043 0.121" contype="0" conaffinity="0"/>
+      <!-- catch surface: a low concave-ish basin (floor disk + a short rim wall) so
+           a released cup settles inside and cannot roll off. The visual mesh is
+           non-colliding; this is the physical container. -->
+      <geom name="bowl_floor" type="cylinder" size="0.070 0.004" pos="0 0 0.126"
+        rgba="0.5 0.1 0.1 0" friction="2 0.1 0.01"/>
+      <geom name="bowl_rim_n" type="box" size="0.072 0.008 0.020" pos="0 0.072 0.140" rgba="0.5 0.1 0.1 0"/>
+      <geom name="bowl_rim_s" type="box" size="0.072 0.008 0.020" pos="0 -0.072 0.140" rgba="0.5 0.1 0.1 0"/>
+      <geom name="bowl_rim_e" type="box" size="0.008 0.072 0.020" pos="0.072 0 0.140" rgba="0.5 0.1 0.1 0"/>
+      <geom name="bowl_rim_w" type="box" size="0.008 0.072 0.020" pos="-0.072 0 0.140" rgba="0.5 0.1 0.1 0"/>
+    </body>
+
+    <!-- graspable textured bottle (replaces the placeholder green cylinder, which
+         is hidden at load by SimWorld). Free body; mesh xy recentered to the body
+         origin. Detectable as 'bottle' and small enough to grasp. -->
+    <body name="ycb_bottle" pos="0.37 0.12 0.14">
+      <freejoint/>
+      <geom name="ycb_bottle_geom" type="mesh" mesh="bottle_ycb" material="bottle_ycb_mat"
+        pos="0.0092 0.0141 0" density="90" friction="3 0.2 0.02"/>
+    </body>
+  </worldbody>
+</mujoco>

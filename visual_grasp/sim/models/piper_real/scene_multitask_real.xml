@@ -1,0 +1,129 @@
+<mujoco model="piper_real_multitask_scene">
+  <!-- Multitask grasp scene on the DH-matching piper_real model (analytic-IK path). Mirrors
+       sim/models/piper/scene_multitask.xml (table + mug cup + YCB mustard bottle + YCB bowl)
+       but built on piper_real.xml so piper_arm.solve_ik drives it. The Menagerie scene is kept
+       untouched as the numeric-IK fallback. YCB assets are shared from ../piper/assets/ (no copy). -->
+  <include file="piper_real.xml"/>
+
+  <statistic center="0.35 0 0.25" extent="0.9"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.35 0.35 0.35" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="140" elevation="-25" offwidth="1280" offheight="720"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.0"/>
+    <material name="table_mat" rgba="0.55 0.38 0.22 1" reflectance="0.0"/>
+    <material name="cup_mat" rgba="0.92 0.92 0.95 1"/>
+    <material name="cup_inner_mat" rgba="0.42 0.43 0.46 1"/>
+    <material name="cup_shadow_mat" rgba="0.12 0.13 0.15 1"/>
+    <material name="demo_bottle_mat" rgba="0.12 0.38 0.78 1"/>
+    <material name="demo_bottle_cap_mat" rgba="0.85 0.88 0.92 1"/>
+    <material name="demo_box_mat" rgba="0.72 0.46 0.20 1"/>
+
+    <!-- YCB 024_bowl: photo-scanned ceramic bowl. The texture is what makes COCO-YOLO detect a
+         'bowl' (untextured synthetic bowls are not recognized -- see DEVLOG). Shared asset. -->
+    <mesh name="bowl_ycb" file="../piper/assets/bowl_ycb.obj"/>
+    <texture name="bowl_ycb_tex" type="2d" file="../piper/assets/bowl_ycb.png"/>
+    <material name="bowl_ycb_mat" texture="bowl_ycb_tex" specular="0.3" shininess="0.4"/>
+    <!-- YCB 006_mustard_bottle, scaled 0.6 so its narrow axis (~40 mm) fits the gripper. -->
+    <mesh name="bottle_ycb" file="../piper/assets/bottle_ycb.obj" scale="0.6 0.6 0.6"/>
+    <texture name="bottle_ycb_tex" type="2d" file="../piper/assets/bottle_ycb.png"/>
+    <material name="bottle_ycb_mat" texture="bottle_ycb_tex" specular="0.2" shininess="0.3"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0.35 0 1.6" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+
+    <!-- low table in front of the arm; top surface at z = 0.10 + 0.02 = 0.12 -->
+    <body name="table" pos="0.42 0 0">
+      <geom name="table_top" type="box" size="0.22 0.30 0.02" pos="0 0 0.10" material="table_mat"/>
+      <geom name="table_ped" type="box" size="0.06 0.06 0.05" pos="0 0 0.05" material="table_mat"/>
+    </body>
+
+    <!-- cup: graspable mug. Main cylinder = physical collision/mass; extra zero-contact geoms
+         (rim, inner shadow, handle) make YOLO see a cup instead of a plain cylinder. -->
+    <body name="cup" pos="0.38 -0.11 0.17">
+      <freejoint/>
+      <geom name="cup_body_collision" type="cylinder" size="0.026 0.045" material="cup_mat"
+        density="235" friction="1.5 0.1 0.01"/>
+      <geom name="cup_rim" type="cylinder" size="0.029 0.004" pos="0 0 0.045"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_opening" type="cylinder" size="0.021 0.002" pos="0 0 0.050"
+        material="cup_shadow_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_inner_wall" type="cylinder" size="0.022 0.030" pos="0 0 0.016"
+        material="cup_inner_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_handle_upper" type="capsule" size="0.004"
+        fromto="-0.024 0 0.025 -0.046 0 0.025"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_handle_lower" type="capsule" size="0.004"
+        fromto="-0.024 0 -0.015 -0.046 0 -0.015"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+      <geom name="cup_handle_outer" type="capsule" size="0.004"
+        fromto="-0.046 0 -0.015 -0.046 0 0.025"
+        material="cup_mat" density="0" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- graspable textured bottle (YCB mustard). Like the cup: the irregular mustard MESH is
+         zero-contact (visual only, so YOLO still sees a bottle), and a clean cylinder is the
+         physical collision/mass so the two-finger gripper grasps it reliably instead of the long
+         prongs catching the bulging mesh. Free body; mesh xy recentered to the body origin. -->
+    <body name="ycb_bottle" pos="0.37 0.12 0.14">
+      <freejoint/>
+      <geom name="ycb_bottle_collision" type="cylinder" size="0.026 0.045" pos="0 0 0.045"
+        density="235" friction="1.5 0.1 0.01" rgba="0.5 0.5 0.5 0"/>
+      <geom name="ycb_bottle_geom" type="mesh" mesh="bottle_ycb" material="bottle_ycb_mat"
+        pos="0.0092 0.0141 0" density="0" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- bowl: static place-target container. Visual = textured YCB mesh (recentered so the bowl
+         center sits at the body xy and the base rests on the table top, z=0.12). Collision = a thin
+         floor disk + short rim wall so a released object settles inside near the center. -->
+    <body name="bowl" pos="0.50 0.0 0">
+      <geom name="bowl_visual" type="mesh" mesh="bowl_ycb" material="bowl_ycb_mat"
+        pos="0.015 0.043 0.121" contype="0" conaffinity="0"/>
+      <geom name="bowl_floor" type="cylinder" size="0.070 0.004" pos="0 0 0.126"
+        rgba="0.5 0.1 0.1 0" friction="2 0.1 0.01"/>
+      <geom name="bowl_rim_n" type="box" size="0.072 0.008 0.020" pos="0 0.072 0.140" rgba="0.5 0.1 0.1 0"/>
+      <geom name="bowl_rim_s" type="box" size="0.072 0.008 0.020" pos="0 -0.072 0.140" rgba="0.5 0.1 0.1 0"/>
+      <geom name="bowl_rim_e" type="box" size="0.008 0.072 0.020" pos="0.072 0 0.140" rgba="0.5 0.1 0.1 0"/>
+      <geom name="bowl_rim_w" type="box" size="0.008 0.072 0.020" pos="-0.072 0 0.140" rgba="0.5 0.1 0.1 0"/>
+    </body>
+
+    <!-- Viewer-only context props. Benchmark reset disables these geoms; the demo reset keeps
+         them on the positive-y side, outside the yellow target's grasp corridor and main ROI. -->
+    <body name="demo_bottle" pos="0.55 0.10 0.195">
+      <freejoint/>
+      <geom name="demo_bottle_body" type="cylinder" size="0.025 0.060"
+        material="demo_bottle_mat" density="240" friction="1.2 0.1 0.01"/>
+      <geom name="demo_bottle_shoulder" type="cylinder" size="0.019 0.015"
+        pos="0 0 0.069" material="demo_bottle_mat" density="0"/>
+      <geom name="demo_bottle_neck" type="cylinder" size="0.011 0.018"
+        pos="0 0 0.099" material="demo_bottle_mat" density="0"/>
+      <geom name="demo_bottle_cap" type="cylinder" size="0.013 0.008"
+        pos="0 0 0.125" material="demo_bottle_cap_mat" density="0"/>
+    </body>
+
+    <body name="demo_box" pos="0.53 0.22 0.12">
+      <geom name="demo_box_floor" type="box" size="0.070 0.050 0.004"
+        pos="0 0 0.004" material="demo_box_mat"/>
+      <geom name="demo_box_wall_n" type="box" size="0.070 0.006 0.030"
+        pos="0 0.050 0.030" material="demo_box_mat"/>
+      <geom name="demo_box_wall_s" type="box" size="0.070 0.006 0.030"
+        pos="0 -0.050 0.030" material="demo_box_mat"/>
+      <geom name="demo_box_wall_e" type="box" size="0.006 0.050 0.030"
+        pos="0.070 0 0.030" material="demo_box_mat"/>
+      <geom name="demo_box_wall_w" type="box" size="0.006 0.050 0.030"
+        pos="-0.070 0 0.030" material="demo_box_mat"/>
+    </body>
+
+    <!-- fixed world camera aimed at the table region (evidence framing + a stable YOLO fallback). -->
+    <camera name="world_cam" pos="0.45 -0.60 0.55" mode="targetbody" target="table" fovy="52"/>
+  </worldbody>
+</mujoco>

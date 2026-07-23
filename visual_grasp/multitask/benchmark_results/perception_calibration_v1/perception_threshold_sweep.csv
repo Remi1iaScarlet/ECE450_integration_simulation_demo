@@ -1,0 +1,6 @@
+threshold,positive_cases,detected_cases,recall_pct,negative_cases,false_positive_cases,false_positive_rate_pct,xy_error_mean_mm,xy_error_p95_mm,z_bias_mean_mm,interior_odd_rejection_rate_pct,mean_scan_duration_ms,gate_passed
+0.1,250,236,94.4,50,0,0.0,3.861,8.735,52.879,0.0,237.49,False
+0.15,250,232,92.8,50,0,0.0,3.786,8.506,52.844,0.0,237.49,False
+0.2,250,227,90.8,50,0,0.0,3.692,8.142,52.8,0.0,237.49,False
+0.25,250,214,85.6,50,0,0.0,3.561,7.812,52.66,0.0,237.49,False
+0.3,250,207,82.8,50,0,0.0,3.452,7.6,52.556,0.0,237.49,False

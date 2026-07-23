@@ -1,0 +1,135 @@
+# Multitask grasp pipeline configuration.
+# Object labels, container labels, and grasp/place parameters live here so the
+# task logic stays free of hard-coded classes and magic numbers.
+
+model:
+  # Robot model + IK backend selector (override with `--model` on the executor).
+  #   menagerie: MuJoCo Menagerie agilex_piper + MuJoCo numeric Jacobian IK (original path).
+  #   real:      DH-matching piper_real model (official AgileX STL + our URDF) driven by
+  #              piper_arm.solve_ik, so simulation and the real robot share ONE IK.
+  active: real
+  menagerie:
+    scene: sim/models/piper/scene_multitask.xml
+    analytic_ik: false
+  real:
+    scene: sim/models/piper_real/scene_multitask_real.xml
+    analytic_ik: true
+    # Wrist-cam scan poses re-tuned for the piper_real link6 frame (swept at full settle;
+    # the Menagerie values do not transfer). Each frames all three objects clear of the
+    # gripper: cup ~0.68, bottle ~0.8, bowl ~0.9. sim_gt ignores these (reads body poses).
+    scan_poses:
+      # Retuned after the old first pose put link7/link8 about 8.4 mm into the table.
+      # Both poses preserve the close wrist-camera view while keeping ~66+ mm mesh clearance.
+      - [-0.05, 0.5, 0.0, 0.0, -0.4, 0.0, 0.035]
+      - [0.15, 0.5, 0.0, 0.0, -0.4, 0.0, 0.035]
+    # per-model grasp overrides for the real Piper's smaller workspace:
+    #  - approach_distance 0.06: a 0.10 m horizontal pre-grasp backoff is unreachable (<0.32 m).
+    #  - min_grasp_z_clearance 0.045: horizontal poses at z=0.15 fall in a dead zone, so grasp
+    #    short objects (bottle) at z=0.165 like the cup, keeping the pre-grasp reachable + a clean
+    #    straight-in horizontal approach (a lower grasp forces a diagonal approach that shoves it).
+    grasp:
+      approach_distance: 0.06
+      min_grasp_z_clearance: 0.045
+      use_table_grasp_z: true   # grasp at a fixed table-relative height (robust to noisy z)
+    detector:
+      # wrist-cam ROI median already sits partway into the object here, so a half
+      # radius push best-centers it (~3 mm vs ~17 mm at full). See object_registry.
+      radius_correction: 0.5
+
+detector:
+  # Explicit perception backend. Default remains YOLO/RGB-D; sim_gt must be
+  # selected here or with `--perception sim_gt` and is not used as a silent
+  # fallback when ultralytics is missing.
+  backend: yolo
+  camera: wrist_cam          # MuJoCo camera fed to YOLO (eye-in-hand)
+  confidence_threshold: 0.075  # calibrated bottle threshold; see perception_calibration_v1_reevaluated
+  width: 640
+  height: 480
+  radius_correction: 1.0     # near-surface push factor for graspable ROI centers (see object_registry)
+  # Multi-pose scan: a cup and a container in the same wrist frame suppress each
+  # other (YOLO domain gap), so the registry visits these arm poses and merges the
+  # detections. Each is a ctrl vector [j1..j6, gripper].
+  scan_poses:
+    - [0.2, 0.4, 0.0, 0.0, 0.0, 0.0, 0.035]   # frames the cup (right); bowl out of view
+    - [0.4, 0.4, 0.0, 0.0, -0.3, 0.0, 0.035]  # frames the bowl/container region
+
+objects:
+  graspable: [cup, bottle]
+  # Object label -> MuJoCo body name, for ground-truth verification and the
+  # explicit sim_gt perception backend when labels differ from body names.
+  body_of:
+    bottle: ycb_bottle
+  # COCO has bowl/vase (no "box"). If YOLO misses the bowl due to domain gap, use
+  # the explicit sim_gt backend for full-simulation place_into validation.
+  containers: [bowl]
+
+scene:
+  table_top_z: 0.12          # world z of the table surface (environment constant)
+
+grasp:
+  strategy: radial_single       # backward-compatible default; or multi_candidate_v1_1
+  profiles:
+    bottle:
+      strategy: multi_candidate_v1_1
+      direction_policy:
+        mode: lateral_band
+        split_y_m: -0.08
+        lower_band:
+          reference: radial
+          offset_deg: -15.0
+        upper_band:
+          reference: absolute
+          angle_deg: 0.0
+      fallback_directions_deg: [315.0]
+      grasp_z_clearance_m: 0.075
+      final_approach_mode: cartesian
+      lift_mode: cartesian
+      cartesian_waypoint_count: 3
+  approach_distance: 0.10    # horizontal pre-grasp backoff along approach (m)
+  lift_height: 0.15          # how high to raise after closing (m)
+  min_grasp_z_clearance: 0.03  # keep grasp z >= table_top_z + this (no GT needed)
+  gripper_open: 0.035
+  gripper_close: -0.005
+  lift_success_threshold: 0.03  # object must rise at least this to count as grasped
+  max_retries: 2                # if the grasp fails to lift, re-attempt up to this many times
+
+grasp_planner:
+  candidate_count: 8
+  start_angle_offset_deg: 0.0  # offset from the legacy base-to-target radial direction
+  min_tcp_table_clearance: 0.015
+  recommended_joint_margin_rad: 0.05
+  max_joint_step_rad: 0.05
+  cartesian_waypoint_count: 3
+  # Ordered, deterministic and bounded transit detours relative to pre-grasp.
+  staging_offsets_m:
+    - [0.00, 0.00, 0.05]
+    - [0.00, 0.00, 0.10]
+    - [-0.08, 0.05, 0.20]
+  plan_start_tolerance_rad: 0.03
+  tcp_tolerance_m: 0.002
+  max_approach_error_deg: 20.0
+  max_closing_axis_vertical_deg: 10.0
+  ik_max_iterations: 180
+  ik_time_budget_s: 0.20
+  # Validated observation pose used after every physical pick failure.
+  safe_observation_pose: [0.0, 1.2, -1.2, 0.0, 0.6, 0.0, 0.035]
+  operating_domain:
+    x: [0.30, 0.46]
+    y: [-0.22, 0.02]
+
+motion:
+  execution_mode: continuous
+  max_joint_velocity_rad_s: 0.8
+  scan_max_joint_velocity_rad_s: 0.8
+  max_following_error_rad: 0.12
+  final_settle_steps: 100
+  scan_settle_steps: 80
+  gripper_settle_steps: 300
+  min_table_clearance_m: 0.010
+  safe_transit_pose: [0.0, 1.2, -1.2, 0.0, 0.6, 0.0, 0.035]
+
+place:
+  surface_release_z_offset: 0.05   # height above a surface target to release
+  container_release_z_offset: 0.07  # height above a container center to release
+  xy_tolerance: 0.09         # max base-xy distance object<->target to count as placed
+                             # (~bowl radius; "into the bowl" allows landing anywhere inside)

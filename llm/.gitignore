@@ -1,0 +1,23 @@
+# Environment
+.env
+venv/
+__pycache__/
+*.pyc
+
+# Database
+data/
+*.db
+
+# IDE
+.vscode/
+.idea/
+
+# ngrok
+ngrok.exe
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test_llm.py

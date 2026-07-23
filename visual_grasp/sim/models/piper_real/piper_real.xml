@@ -1,0 +1,135 @@
+<mujoco model="piper_real">
+  <!-- DH-matching Piper model: official AgileX STL meshes + our config/piper_description.urdf
+       kinematics (compiled from piper_real.urdf, see piper_real_gen.xml). DH-FK matches this
+       model's link6 body to <0.1 mm in position AND orientation, so piper_arm.solve_ik can drive
+       it exactly. This is the robot file the analytic-IK grasp scene includes. Kept separate from
+       the Menagerie sim/models/piper/ model (which differs from DH by ~10 mm). -->
+  <!-- No meshdir: robot mesh files carry the "meshes/" prefix, so a scene that includes this
+       file can also reference sibling assets (e.g. ../piper/assets/*.obj) without a meshdir clash. -->
+  <compiler angle="radian"/>
+  <option integrator="implicitfast" cone="elliptic" impratio="10"/>
+
+  <default>
+    <default class="piper">
+      <joint frictionloss="0.2" armature="0.01"/>
+      <default class="finger">
+        <joint frictionloss="0" armature="0.005"/>
+      </default>
+    </default>
+  </default>
+
+  <asset>
+    <mesh name="base_link" content_type="model/stl" file="meshes/base_link.STL"/>
+    <mesh name="link1" content_type="model/stl" file="meshes/link1.STL"/>
+    <mesh name="link2" content_type="model/stl" file="meshes/link2.STL"/>
+    <mesh name="link3" content_type="model/stl" file="meshes/link3.STL"/>
+    <mesh name="link4" content_type="model/stl" file="meshes/link4.STL"/>
+    <mesh name="link5" content_type="model/stl" file="meshes/link5.STL"/>
+    <mesh name="link6" content_type="model/stl" file="meshes/link6.STL"/>
+    <mesh name="gripper_base" content_type="model/stl" file="meshes/gripper_base.STL"/>
+    <mesh name="link7" content_type="model/stl" file="meshes/link7.STL"/>
+    <mesh name="link8" content_type="model/stl" file="meshes/link8.STL"/>
+  </asset>
+
+  <worldbody>
+    <!-- base_link is a proper body at the world origin (identity) so the perception
+         registry can read world_T_base and DH-base == world holds. The URDF's fixed
+         base would otherwise merge these geoms into worldbody. -->
+    <body name="base_link" pos="0 0 0" gravcomp="1">
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="base_link"/>
+      <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="base_link" contype="2" conaffinity="2"/>
+      <body name="link1" pos="0 0 0.123" childclass="piper" gravcomp="1">
+      <inertial pos="0.000121505 0.000104632 -0.00438597" quat="0.682111 0.730899 0.0143111 -0.0175062" mass="0.71" diaginertia="0.000489262 0.000439887 0.000404551"/>
+      <joint name="joint1" pos="0 0 0" axis="0 0 1" range="-2.618 2.168" actuatorfrcrange="-100 100"/>
+      <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link1"/>
+      <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link1" contype="2" conaffinity="2"/>
+      <body name="link2" quat="0.0480084 -0.0480134 -0.705476 -0.705474" gravcomp="1">
+        <inertial pos="0.198666 -0.0109269 0.00142122" quat="0.510131 0.475585 0.525075 0.48773" mass="1.17" diaginertia="0.0679032 0.067745 0.00111966"/>
+        <joint name="joint2" pos="0 0 0" axis="0 0 1" range="0 3.14" actuatorfrcrange="-100 100"/>
+        <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link2"/>
+        <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link2" contype="2" conaffinity="2"/>
+        <body name="link3" pos="0.28503 0 0" quat="0.623996 0 0 -0.781427" gravcomp="1">
+          <inertial pos="-0.0202738 -0.133915 -0.000458683" quat="0.706282 0.705111 0.0532202 0.0339395" mass="0.5" diaginertia="0.0138227 0.0138032 0.000244685"/>
+          <joint name="joint3" pos="0 0 0" axis="0 0 1" range="-2.967 0" actuatorfrcrange="-100 100"/>
+          <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link3"/>
+          <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link3" contype="2" conaffinity="2"/>
+          <body name="link4" pos="-0.021984 -0.25075 0" quat="0.707105 0.707108 0 0" gravcomp="1">
+            <inertial pos="-9.66636e-05 0.000876064 -0.00496881" quat="0.714689 -0.0948484 0.0635223 0.690064" mass="0.38" diaginertia="0.000191586 0.000185052 0.000152863"/>
+            <joint name="joint4" pos="0 0 0" axis="0 0 1" range="-1.745 1.745" actuatorfrcrange="-100 100"/>
+            <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link4"/>
+            <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link4" contype="2" conaffinity="2"/>
+            <body name="link5" quat="0.707105 -0.707108 0 0" gravcomp="1">
+              <inertial pos="-4.10554e-05 -0.0566487 -0.00372058" quat="0.709589 0.704614 0.00134613 -0.00132656" mass="0.383" diaginertia="0.00166169 0.00164328 0.000185028"/>
+              <joint name="joint5" pos="0 0 0" axis="0 0 1" range="-1.22 1.22" actuatorfrcrange="-100 100"/>
+              <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link5"/>
+              <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link5" contype="2" conaffinity="2"/>
+              <body name="link6" pos="8.8259e-05 -0.091 0" quat="0.707105 0.707108 0 0" gravcomp="1">
+                <inertial pos="-0.000182344 7.9409e-05 0.0316207" quat="0.999977 6.30204e-05 0.00678001 0.000789387" mass="0.457" diaginertia="0.000938049 0.000723078 0.000395388"/>
+                <joint name="joint6" pos="0 0 0" axis="0 0 1" range="-2.0944 2.0944" actuatorfrcrange="-100 100"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.898039 0.917647 0.929412 1" mesh="link6"/>
+                <geom type="mesh" group="3" rgba="0.898039 0.917647 0.929412 1" mesh="link6" contype="2" conaffinity="2"/>
+                <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="gripper_base"/>
+                <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="gripper_base" contype="2" conaffinity="2"/>
+                <!-- eye-in-hand camera (link6 +z = approach toward fingers, +y = finger closing,
+                     +x = up in the normal viewing pose). Starting from the Menagerie mount pose;
+                     re-tuned for this link6 frame in task 4. -->
+                <camera name="wrist_cam" pos="-0.08 0 -0.10" xyaxes="0 -1 0 -0.980 0 0.200" fovy="58"/>
+                <!-- TCP at the finger-pad midpoint (grasp center): link6 +z=0.10, between the
+                     prongs (finger mesh spans link6 z 0.059-0.136, inner-pad centroid 0.095).
+                     Inherits link6 orientation, so horizontal_grasp_frame's [up, closing, forward]
+                     maps to link6 [+x, +y, +z] exactly. -->
+                <site name="tcp" pos="0 0 0.10" size="0.006" rgba="1 0 0 1"/>
+                <body name="link7" pos="0 0 0.1358" quat="0.707105 0.707108 0 0" gravcomp="1">
+                  <inertial pos="0.000651232 -0.049193 0.00972259" quat="0.477798 0.572974 -0.518028 0.418398" mass="0.025" diaginertia="7.74531e-05 7.36783e-05 5.0886e-06"/>
+                  <joint name="joint7" pos="0 0 0" axis="0 0 1" type="slide" range="0 0.035" actuatorfrcrange="-10 10" class="finger"/>
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link7"/>
+                  <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link7" friction="2 0.1 0.01"/>
+                </body>
+                <body name="link8" pos="0 0 0.1358" quat="-2.59734e-06 -2.59735e-06 -0.707108 -0.707105" gravcomp="1">
+                  <inertial pos="0.000651232 -0.049193 0.00972259" quat="0.477798 0.572974 -0.518028 0.418398" mass="0.025" diaginertia="7.74531e-05 7.36783e-05 5.0886e-06"/>
+                  <joint name="joint8" pos="0 0 0" axis="0 0 -1" type="slide" range="-0.035 0" actuatorfrcrange="-10 10" class="finger"/>
+                  <geom type="mesh" contype="0" conaffinity="0" group="1" density="0" rgba="0.792157 0.819608 0.933333 1" mesh="link8"/>
+                  <geom type="mesh" group="3" rgba="0.792157 0.819608 0.933333 1" mesh="link8" friction="2 0.1 0.01"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <!-- adjacent links interpenetrate at their shared joint; exclude to avoid solver churn.
+         base_link<->link1 in particular jams joint1 (base yaw) if not excluded. -->
+    <exclude body1="base_link" body2="link1"/>
+    <exclude body1="link1" body2="link2"/>
+    <exclude body1="link2" body2="link3"/>
+    <exclude body1="link3" body2="link4"/>
+    <exclude body1="link4" body2="link5"/>
+    <exclude body1="link5" body2="link6"/>
+    <exclude body1="link6" body2="link7"/>
+    <exclude body1="link6" body2="link8"/>
+    <exclude body1="link7" body2="link8"/>
+  </contact>
+
+  <equality>
+    <joint joint1="joint8" joint2="joint7" polycoef="0 -1 0 0 0"/>
+  </equality>
+
+  <actuator>
+    <position name="joint1" joint="joint1" class="piper" kp="120" kv="12"/>
+    <position name="joint2" joint="joint2" class="piper" kp="120" kv="12"/>
+    <position name="joint3" joint="joint3" class="piper" kp="120" kv="12"/>
+    <position name="joint4" joint="joint4" class="piper" kp="60" kv="6"/>
+    <position name="joint5" joint="joint5" class="piper" kp="30" kv="3"/>
+    <position name="joint6" joint="joint6" class="piper" kp="20" kv="2"/>
+    <position name="gripper" joint="joint7" class="finger" kp="60" kv="4"/>
+  </actuator>
+
+  <keyframe>
+    <!-- ready pose: arm raised over the table, gripper open -->
+    <key name="home" qpos="0 1.2 -1.2 0 0.6 0 0 0" ctrl="0 1.2 -1.2 0 0.6 0 0.035"/>
+  </keyframe>
+</mujoco>

@@ -1,0 +1,30 @@
+# Systemd service file for Robot Command Demo
+# Place this file at /etc/systemd/system/robot-demo.service
+#
+# After placing the file, run:
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable robot-demo
+#   sudo systemctl start robot-demo
+
+[Unit]
+Description=Robot Command Demo Backend
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/robot-command-demo
+ExecStart=/opt/robot-command-demo/venv/bin/uvicorn backend.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+# Environment file
+EnvironmentFile=/opt/robot-command-demo/.env
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

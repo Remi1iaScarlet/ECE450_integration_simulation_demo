@@ -1,0 +1,261 @@
+{
+  "suite": "perception_e2e",
+  "calibrated_threshold": 0.075,
+  "sim_gt_reference": {
+    "trials": 250,
+    "successes": 250,
+    "success_rate_pct": 100.0
+  },
+  "yolo": {
+    "trials": 200,
+    "successes": 191,
+    "success_rate_pct": 95.5,
+    "wilson_95_pct": [
+      91.67,
+      97.61
+    ],
+    "target_met": true,
+    "mean_task_duration_ms": 1048.55,
+    "p95_task_duration_ms": 1218.0,
+    "mean_lift_height_mm": 145.99,
+    "mean_source_center_error_mm": 52.85,
+    "max_target_settle_displacement_mm": 0.0,
+    "unexpected_contact_trials": 0,
+    "failure_state_counts": {
+      "DETECT_SOURCE": 9
+    },
+    "failure_reason_counts": {
+      "STATE_FAILED": 9
+    },
+    "initial_failure_state_counts": {
+      "DETECT_SOURCE": 9
+    },
+    "initial_failure_reason_counts": {
+      "STATE_FAILED": 9
+    },
+    "cells": [
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.16,
+        "trials": 10,
+        "successes": 4,
+        "success_rate_pct": 40.0,
+        "wilson_95_pct": [
+          16.82,
+          68.73
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.115,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.07,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.025,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.16,
+        "trials": 10,
+        "successes": 9,
+        "success_rate_pct": 90.0,
+        "wilson_95_pct": [
+          59.58,
+          98.21
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.115,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.07,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.025,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.16,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.115,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.07,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.025,
+        "trials": 10,
+        "successes": 8,
+        "success_rate_pct": 80.0,
+        "wilson_95_pct": [
+          49.02,
+          94.33
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.16,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.115,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.07,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.025,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.16,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.115,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.07,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.025,
+        "trials": 10,
+        "successes": 10,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          72.25,
+          100.0
+        ]
+      }
+    ]
+  },
+  "passed": true,
+  "wall_clock_s": 212.39
+}

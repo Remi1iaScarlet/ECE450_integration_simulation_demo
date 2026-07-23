@@ -1,0 +1,38 @@
+{
+  "backend": "yolo",
+  "model": "real",
+  "trials": 100,
+  "seed": 20260712,
+  "successes": 100,
+  "success_rate_pct": 100.0,
+  "dr1_pick_place_target_pct": 85.0,
+  "dr1_success_target_met": true,
+  "mean_task_duration_ms": 1857.06,
+  "p95_task_duration_ms": 1895.53,
+  "mean_detect_source_ms": 559.45,
+  "p95_detect_source_ms": 576.47,
+  "mean_source_center_error_mm": 6.1,
+  "p95_source_center_error_mm": 6.1,
+  "mean_placement_error_mm": 28.3,
+  "p95_placement_error_mm": 28.3,
+  "mean_successful_placement_error_mm": 28.3,
+  "p95_successful_placement_error_mm": 28.3,
+  "mean_lift_height_mm": 127.4,
+  "failure_state_counts": {},
+  "wall_clock_s": 187.21,
+  "test_region": {
+    "cup_x_m": [
+      0.38,
+      0.38
+    ],
+    "cup_y_m": [
+      -0.11,
+      -0.11
+    ]
+  },
+  "notes": [
+    "Task latency is host-side simulated task execution time, not DR1 ROS2/HDC bridge latency.",
+    "sim_gt isolates manipulation control; yolo exercises YOLO plus RGB-D localization.",
+    "Only MuJoCo is tested, so the DR1 Gazebo/MuJoCo engine-delta criterion is not assessed."
+  ]
+}

@@ -1,0 +1,592 @@
+{
+  "suite": "grasp_heatmap",
+  "target_label": "bottle",
+  "model": "piper_real",
+  "strategy": "radial_single",
+  "seed": 20260713,
+  "success_threshold_pct": 85.0,
+  "smoke_gate": {
+    "required_successes": 23,
+    "trials": 25,
+    "successes": 3,
+    "measurement_valid": false,
+    "functional_passed": false,
+    "passed": false,
+    "max_target_settle_displacement_mm": 0.0,
+    "unexpected_contact_trials": 0,
+    "cells": [
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.16,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.115,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.07,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": -0.025,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.34,
+        "grid_y_m": 0.02,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.16,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.115,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.07,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": -0.025,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.36,
+        "grid_y_m": 0.02,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.16,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.115,
+        "trials": 1,
+        "successes": 1,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          20.65,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.07,
+        "trials": 1,
+        "successes": 1,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          20.65,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": -0.025,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.38,
+        "grid_y_m": 0.02,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.16,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.115,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.07,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": -0.025,
+        "trials": 1,
+        "successes": 1,
+        "success_rate_pct": 100.0,
+        "wilson_95_pct": [
+          20.65,
+          100.0
+        ]
+      },
+      {
+        "grid_x_m": 0.4,
+        "grid_y_m": 0.02,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.16,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.115,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.07,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": -0.025,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      },
+      {
+        "grid_x_m": 0.42,
+        "grid_y_m": 0.02,
+        "trials": 1,
+        "successes": 0,
+        "success_rate_pct": 0.0,
+        "wilson_95_pct": [
+          0.0,
+          79.35
+        ]
+      }
+    ],
+    "failure_state_counts": {
+      "DETECT_SOURCE": 22
+    },
+    "failure_reason_counts": {
+      "OBJECT_OUT_OF_ODD": 22
+    },
+    "initial_failure_state_counts": {
+      "VERIFY_GRASP": 20,
+      "DETECT_SOURCE": 2
+    },
+    "initial_failure_reason_counts": {
+      "LIFT_THRESHOLD_NOT_MET": 20,
+      "OBJECT_OUT_OF_ODD": 2
+    }
+  },
+  "backends": {},
+  "direction_probe": {
+    "trials": 0,
+    "cells": [],
+    "classification_counts": {}
+  },
+  "pick_scene_isolation": {
+    "enabled": true,
+    "hidden_bodies": [
+      "bottle",
+      "cup",
+      "bowl"
+    ],
+    "max_settle_displacement_mm": 0.0,
+    "unexpected_contact_trials": 0
+  },
+  "out_of_domain_diagnostics": {
+    "excluded_from_success_rate": true,
+    "configured_y_max_m": 0.02,
+    "scene_default_bottle_y_m": 0.12,
+    "configuration_mismatch": true,
+    "cases": [
+      {
+        "case_id": "ood-x01-y01",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.34,
+        "grid_y_m": 0.05,
+        "actual_x_m": 0.34,
+        "actual_y_m": 0.05,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.2,
+        "detect_source_ms": 0.2,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.34 0.05 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.2}]"
+      },
+      {
+        "case_id": "ood-x01-y02",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.34,
+        "grid_y_m": 0.12,
+        "actual_x_m": 0.34,
+        "actual_y_m": 0.12,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.34 0.12 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x02-y01",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.36,
+        "grid_y_m": 0.05,
+        "actual_x_m": 0.36,
+        "actual_y_m": 0.05,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.36 0.05 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x02-y02",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.36,
+        "grid_y_m": 0.12,
+        "actual_x_m": 0.36,
+        "actual_y_m": 0.12,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.2,
+        "detect_source_ms": 0.2,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.36 0.12 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.2}]"
+      },
+      {
+        "case_id": "ood-x03-y01",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.38,
+        "grid_y_m": 0.05,
+        "actual_x_m": 0.38,
+        "actual_y_m": 0.05,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.38 0.05 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x03-y02",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.38,
+        "grid_y_m": 0.12,
+        "actual_x_m": 0.38,
+        "actual_y_m": 0.12,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.38 0.12 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x04-y01",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.4,
+        "grid_y_m": 0.05,
+        "actual_x_m": 0.4,
+        "actual_y_m": 0.05,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.4  0.05 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x04-y02",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.4,
+        "grid_y_m": 0.12,
+        "actual_x_m": 0.4,
+        "actual_y_m": 0.12,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.4  0.12 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x05-y01",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.42,
+        "grid_y_m": 0.05,
+        "actual_x_m": 0.42,
+        "actual_y_m": 0.05,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.1,
+        "detect_source_ms": 0.1,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.42 0.05 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.1}]"
+      },
+      {
+        "case_id": "ood-x05-y02",
+        "backend": "sim_gt",
+        "target_label": "bottle",
+        "grid_x_m": 0.42,
+        "grid_y_m": 0.12,
+        "actual_x_m": 0.42,
+        "actual_y_m": 0.12,
+        "yaw_deg": 0.0,
+        "repeat_index": 1,
+        "domain_class": "OUT_OF_DOMAIN_DIAGNOSTIC",
+        "success": false,
+        "initial_failed_state": "DETECT_SOURCE",
+        "initial_failure_reason": "OBJECT_OUT_OF_ODD",
+        "failed_state": "DETECT_SOURCE",
+        "failure_reason": "OBJECT_OUT_OF_ODD",
+        "lift_height_mm": null,
+        "task_duration_ms": 0.2,
+        "detect_source_ms": 0.2,
+        "execute_pick_ms": 0,
+        "source_center_error_mm": null,
+        "target_settle_displacement_mm": 0.0,
+        "unexpected_contacts_json": "[]",
+        "state_log_json": "[{\"state\": \"DETECT_SOURCE\", \"success\": false, \"message\": \"object center [0.42 0.12 0.12] is outside the tabletop operating domain\", \"reason\": \"OBJECT_OUT_OF_ODD\", \"duration_ms\": 0.2}]"
+      }
+    ]
+  },
+  "yolo_executed": false,
+  "wall_clock_s": 21.25,
+  "notes": [
+    "Pick success requires the existing VERIFY_GRASP lift threshold of 30 mm.",
+    "Out-of-domain diagnostics are excluded from all success-rate denominators.",
+    "The scene default ycb_bottle y=0.12 m exceeds the configured ODD y maximum.",
+    "sim_gt isolates manipulation; YOLO exercises YOLO plus RGB-D localization.",
+    "The pick-only fixture hides and disables non-target cup/bottle/bowl geometry."
+  ]
+}

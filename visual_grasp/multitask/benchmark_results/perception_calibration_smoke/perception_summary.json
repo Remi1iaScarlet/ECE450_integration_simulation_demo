@@ -1,0 +1,68 @@
+{
+  "suite": "perception_calibration",
+  "spec": {
+    "target_label": "bottle",
+    "confidence_thresholds": [
+      0.1,
+      0.3
+    ],
+    "positive_repeats": 1,
+    "negative_cases": 2,
+    "interior_y_max_m": 0.01,
+    "boundary_y_m": 0.02,
+    "seed": 20260713,
+    "model": "piper_real"
+  },
+  "production_threshold_before": 0.3,
+  "threshold_metrics": [
+    {
+      "threshold": 0.1,
+      "positive_cases": 25,
+      "detected_cases": 25,
+      "recall_pct": 100.0,
+      "negative_cases": 2,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 4.942,
+      "xy_error_p95_mm": 9.635,
+      "z_bias_mean_mm": 53.501,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 251.25,
+      "gate_passed": true
+    },
+    {
+      "threshold": 0.3,
+      "positive_cases": 25,
+      "detected_cases": 18,
+      "recall_pct": 72.0,
+      "negative_cases": 2,
+      "false_positive_cases": 0,
+      "false_positive_rate_pct": 0.0,
+      "xy_error_mean_mm": 3.701,
+      "xy_error_p95_mm": 7.385,
+      "z_bias_mean_mm": 52.232,
+      "interior_odd_rejection_rate_pct": 0.0,
+      "mean_scan_duration_ms": 251.25,
+      "gate_passed": false
+    }
+  ],
+  "gate": {
+    "passed": true,
+    "selected_threshold": 0.1,
+    "requirements": {
+      "recall_pct_min": 95.0,
+      "false_positive_rate_pct_max": 2.0,
+      "xy_error_p95_mm_max": 10.0
+    }
+  },
+  "boundary_diagnostic": {
+    "cases": 5,
+    "detected_cases": 4,
+    "detection_rate_pct": 80.0,
+    "odd_rejection_cases": 2,
+    "odd_rejection_rate_pct": 50.0,
+    "xy_error_p95_mm": 8.834
+  },
+  "wall_clock_s": 17.97,
+  "production_config_modified": false
+}

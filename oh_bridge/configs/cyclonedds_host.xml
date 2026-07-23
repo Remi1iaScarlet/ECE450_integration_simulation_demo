@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<CycloneDDS xmlns="https://cdds.io/config">
+
+    <Domain id="any">
+
+        <General>
+
+            <!-- Host Docker Network Interface -->
+
+            <NetworkInterfaceAddress>
+                192.168.122.1
+            </NetworkInterfaceAddress>
+
+            <!-- Enable multicast discovery -->
+
+            <AllowMulticast>true</AllowMulticast>
+
+        </General>
+
+    </Domain>
+
+</CycloneDDS>

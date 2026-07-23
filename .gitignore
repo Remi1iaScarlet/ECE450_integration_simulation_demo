@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# llm/ (robot-command-demo) runtime state -- see llm/.gitignore for the
+# original list; repeated here since this is a plain copy, not a submodule.
+llm/.env
+llm/venv/
+llm/data/
+llm/*.db
+
+# visual_grasp runtime/tooling state
+visual_grasp/.python_deps/
+visual_grasp/.conda_env/
+visual_grasp/.conda_pkgs/
+visual_grasp/.ros/
+visual_grasp/.cache/
+visual_grasp/MUJOCO_LOG.TXT
+
+# OS
+.DS_Store
+Thumbs.db
