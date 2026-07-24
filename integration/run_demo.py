@@ -113,7 +113,7 @@ def main() -> int:
                          help="only sim_mujoco is wired up in this demo repo; real_piper needs "
                               "the real ROS1 gateway, see oh_bridge_mock.py docstring")
     parser.add_argument("--perception", default="sim_gt", choices=["sim_gt", "yolo"])
-    parser.add_argument("--model", default="real", choices=["menagerie", "real"])
+    parser.add_argument("--model", default="menagerie", choices=["menagerie", "real"])
     parser.add_argument("--no-evidence", action="store_true", help="skip saving a GIF/PNG of the run")
     parser.add_argument("--mp4", action="store_true",
                          help="save a full-resolution MP4 instead of the default downscaled GIF "

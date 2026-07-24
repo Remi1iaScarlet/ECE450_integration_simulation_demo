@@ -96,7 +96,7 @@ def main() -> int:
     source.add_argument("--llm-json", help='{"intent": ..., "parameters": {...}}, no LLM call')
     parser.add_argument("--api-base", default="http://127.0.0.1:8000")
     parser.add_argument("--perception", default="sim_gt", choices=["sim_gt", "yolo"])
-    parser.add_argument("--model", default="real", choices=["menagerie", "real"])
+    parser.add_argument("--model", default="menagerie", choices=["menagerie", "real"])
     parser.add_argument("--speed", type=float, default=1.0, help="playback speed multiplier")
     parser.add_argument("--hold", type=float, default=8.0,
                          help="seconds to keep the window open after the task finishes")
