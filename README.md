@@ -175,7 +175,22 @@ CREDITS.md      exact source commits + what was changed
   This repo works around both by defaulting to `--model menagerie`
   (MuJoCo numeric IK), which was independently verified (direct contact
   inspection, not just the XY check) to fully release the object into the
-  container. `--model real` still exists and can be requested explicitly,
-  but is a known-broken path for any task that releases an object
+  container.
+
+  **Important: this is a sim-only workaround, not a real-hardware-ready
+  fix.** `piper_real` + analytic IK (`--model real`) is the only path meant
+  to transfer to the physical Piper (DH parameters matched to the real arm,
+  `piper_arm.solve_ik` is what would run on hardware); `menagerie` is a
+  MuJoCo Menagerie community model with no real-robot counterpart --
+  joint trajectories computed on it cannot be replayed on hardware. A demo
+  recorded with the `menagerie` default only demonstrates the task
+  succeeding in simulation, not sim2real readiness. The IK solver itself
+  isn't in question here (DEVLOG records `solve_ik` at a 97% solve rate and
+  DH-FK matching the real arm to <0.1mm) -- the bug is specifically in
+  `execute_grasp`'s pre-grasp motion and the branch-selection heuristic
+  around it, which is a scoped, well-understood fix, not a reason to
+  distrust the analytic IK path generally. `--model real` still exists and
+  can be requested explicitly, but is a known-broken path for any task that
+  releases an object
   (`place_at`/`place_into`/`clear_table`) until someone fixes the
   approach-path/IK-branch-selection issue in `visual_grasp` itself.
