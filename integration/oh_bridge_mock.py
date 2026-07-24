@@ -44,7 +44,7 @@ def llm_item_to_bridge_command(
     request_id: str,
     backend: str = "sim_mujoco",
     perception: str = "sim_gt",
-    model: str | None = "real",
+    model: str | None = "menagerie",
 ) -> dict:
     """Convert a robot-command-demo queue item's llm_output into a
     visual_grasp bridge JSON command.
@@ -53,6 +53,27 @@ def llm_item_to_bridge_command(
     poses) rather than "yolo", matching visual_grasp's own guidance for
     reproducible demos (see visual_grasp/devlog/DEVLOG.md, 2026-07-08 entry
     on the YOLO clear_table +y bottle edge case).
+
+    ``model`` defaults to "menagerie", not visual_grasp's own config.yaml
+    default of "real" (piper_real + analytic IK). Diagnosed here on
+    2026-07-24: on piper_real, the pre-grasp approach in
+    multitask/primitives.py:execute_grasp is a single-jump move_to (no
+    interpolated waypoints, unlike carry_to), which can sweep the open
+    gripper into the object before the close/lift sequence even starts.
+    Once that happens the finger joints (joint7/joint8) get pinned past
+    their own declared range and never separate again -- place_into looks
+    like it succeeds (VERIFY_DONE only checks XY, not whether the object
+    actually left the gripper) but the object stays stuck to the fingers.
+    Interpolating just the pre-grasp approach removes the stuck-contact
+    symptom, but then changes which analytic-IK branch gets selected for
+    the following descend-to-grasp step (branch choice is seeded from
+    "closest to current joint state"), which in turn failed to actually
+    capture the object in testing. That is a deeper, unresolved issue in
+    piper_real's analytic IK path -- not something to patch around here.
+    menagerie (MuJoCo numeric IK) has neither problem: verified by direct
+    contact inspection (not just the XY-tolerance check) that the object
+    fully separates from the gripper and rests in the container. Pass
+    model="real" explicitly if you specifically need the piper_real path.
     """
     intent = llm_output.get("intent")
     task = INTENT_TO_TASK.get(intent)

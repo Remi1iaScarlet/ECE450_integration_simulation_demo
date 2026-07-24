@@ -158,3 +158,24 @@ CREDITS.md      exact source commits + what was changed
   other (`multitask/bridge.py`, `tests/test_bridge.py`). This demo sidesteps
   that entirely by only using `backend=sim_mujoco`, which is unaffected by
   the conflict -- but real-hardware work still needs that reconciled.
+- **`--model real` (piper_real) place_into/clear_table is broken**: diagnosed
+  2026-07-24, see `integration/oh_bridge_mock.py`'s `llm_item_to_bridge_command`
+  docstring for the full chain of evidence. Short version: the pre-grasp
+  approach in `visual_grasp/multitask/primitives.py:execute_grasp` is a
+  single-jump move (not interpolated like `carry_to`), which can sweep the
+  open gripper into the object before closing even starts; once that
+  happens the finger joints get pinned past their own range limit and never
+  separate, so the object stays stuck to the gripper for the rest of the
+  task. `VERIFY_DONE` only checks XY distance, not object/gripper
+  separation, so this reports `success: true` anyway. Interpolating the
+  approach removes that symptom but then changes which analytic-IK branch
+  gets selected for the following descend-to-grasp step, and the
+  differently-selected branch failed to actually capture the object in
+  testing -- a second, deeper, unresolved issue in the analytic IK path.
+  This repo works around both by defaulting to `--model menagerie`
+  (MuJoCo numeric IK), which was independently verified (direct contact
+  inspection, not just the XY check) to fully release the object into the
+  container. `--model real` still exists and can be requested explicitly,
+  but is a known-broken path for any task that releases an object
+  (`place_at`/`place_into`/`clear_table`) until someone fixes the
+  approach-path/IK-branch-selection issue in `visual_grasp` itself.

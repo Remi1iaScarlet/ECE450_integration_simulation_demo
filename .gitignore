@@ -17,6 +17,7 @@ visual_grasp/.conda_pkgs/
 visual_grasp/.ros/
 visual_grasp/.cache/
 visual_grasp/MUJOCO_LOG.TXT
+MUJOCO_LOG.TXT
 
 # OS
 .DS_Store
