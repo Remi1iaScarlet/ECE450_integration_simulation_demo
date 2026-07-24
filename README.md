@@ -76,7 +76,34 @@ runs through `llm/backend/validator.py`'s whitelist, so a malformed or
 unsupported intent is rejected the same way a real LLM output would be.
 
 Add `--no-evidence` to skip saving a GIF/PNG of the run; drop it to get one
-under `visual_grasp/multitask/evidence/bridge_<task>_<object>.gif`.
+under `visual_grasp/multitask/evidence/bridge_<task>_<object>.gif`, or add
+`--mp4` for a full-resolution MP4 in the same folder instead (better for
+filming off a screen than the downscaled GIF).
+
+### Live interactive viewer (needs a machine with a real display)
+
+`run_demo.py` renders offscreen (`MUJOCO_GL=egl`) and only produces a
+GIF/MP4 after the fact -- there's no window to watch live. If you're on a
+machine with an actual display (not this headless build machine),
+`integration/live_viewer_demo.py` opens a real MuJoCo window you can orbit
+while the task runs:
+
+```bash
+MUJOCO_GL=glfw python3 integration/live_viewer_demo.py --command "put the cup in the bowl"
+```
+
+Same `--command` / `--llm-json` / `--from-queue` input modes as `run_demo.py`.
+On macOS this needs `mjpython` instead of `python3` (MuJoCo passive-viewer
+main-thread requirement, same as `visual_grasp/multitask/grasp_viewer.py`);
+on Linux, plain `python3` with a working X/Wayland session is enough.
+
+**Caveat**: this was written and sanity-checked on a machine with no
+display -- confirmed everything up through the LLM call, validation, and
+world construction runs cleanly, and fails exactly (and only) at
+`mujoco.viewer.launch_passive()` with a GLFW "no DISPLAY" error, which is
+the expected failure mode headless. The window itself opening and rendering
+correctly has not been visually confirmed; if it misbehaves on your display
+machine, the error message + which line it's on is what to report back.
 
 ### Real LLM call, no server
 
