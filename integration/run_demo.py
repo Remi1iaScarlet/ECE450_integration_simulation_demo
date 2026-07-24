@@ -115,6 +115,11 @@ def main() -> int:
     parser.add_argument("--perception", default="sim_gt", choices=["sim_gt", "yolo"])
     parser.add_argument("--model", default="real", choices=["menagerie", "real"])
     parser.add_argument("--no-evidence", action="store_true", help="skip saving a GIF/PNG of the run")
+    parser.add_argument("--mp4", action="store_true",
+                         help="save a full-resolution MP4 instead of the default downscaled GIF "
+                              "(for filming a demo); writes to visual_grasp/multitask/evidence/")
+    parser.add_argument("--record-cam", default="world_cam", choices=["world_cam", "wrist_cam"],
+                         help="which camera's frames to save as evidence")
     parser.add_argument("--dry-run", action="store_true", help="validate + build the bridge command, skip MuJoCo")
     args = parser.parse_args()
 
@@ -146,10 +151,17 @@ def main() -> int:
 
     from multitask import bridge  # visual_grasp/multitask/bridge.py
 
+    evidence_kwargs = {}
+    if args.mp4 and not args.dry_run and not args.no_evidence:
+        from video_export import mp4_evidence_saver
+        evidence_kwargs["evidence_saver"] = mp4_evidence_saver()
+
     result = bridge.run_bridge(
         bridge_command,
         dry_run=args.dry_run,
         no_evidence=args.no_evidence,
+        record_cam=args.record_cam,
+        **evidence_kwargs,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
 
