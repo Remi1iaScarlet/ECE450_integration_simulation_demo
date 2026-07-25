@@ -160,39 +160,51 @@ CREDITS.md      exact source commits + what was changed
   other (`multitask/bridge.py`, `tests/test_bridge.py`). This demo sidesteps
   that entirely by only using `backend=sim_mujoco`, which is unaffected by
   the conflict -- but real-hardware work still needs that reconciled.
-- **`--model real` (piper_real) place_into/clear_table is broken**: diagnosed
-  2026-07-24, see `integration/oh_bridge_mock.py`'s `llm_item_to_bridge_command`
-  docstring for the full chain of evidence. Short version: the pre-grasp
-  approach in `visual_grasp/multitask/primitives.py:execute_grasp` is a
-  single-jump move (not interpolated like `carry_to`), which can sweep the
-  open gripper into the object before closing even starts; once that
-  happens the finger joints get pinned past their own range limit and never
-  separate, so the object stays stuck to the gripper for the rest of the
-  task. `VERIFY_DONE` only checks XY distance, not object/gripper
-  separation, so this reports `success: true` anyway. Interpolating the
-  approach removes that symptom but then changes which analytic-IK branch
-  gets selected for the following descend-to-grasp step, and the
-  differently-selected branch failed to actually capture the object in
-  testing -- a second, deeper, unresolved issue in the analytic IK path.
-  This repo works around both by defaulting to `--model menagerie`
-  (MuJoCo numeric IK), which was independently verified (direct contact
-  inspection, not just the XY check) to fully release the object into the
-  container.
+- **`--model real` (piper_real) place_into/place_at was broken, fixed
+  2026-07-25**: diagnosed and fixed across three separate bugs, all in
+  `visual_grasp/multitask/{primitives,world,executor}.py`; see those files'
+  docstrings/comments for the full evidence chain (waypoint-by-waypoint
+  contact and orientation traces, not just end-state checks).
+  1. `execute_grasp`'s pre-grasp approach and lift were single-jump moves;
+     the PD-driven path between joint configs is uncontrolled and could
+     sweep the open gripper through the object before closing, or fling a
+     held object on a fast lift. Both now go through `carry_to`
+     (Cartesian-interpolated) on the analytic-IK model, and `move_to`
+     verifies the arm actually converges to the IK target instead of
+     treating "IK found *a* solution" as success.
+  2. `release_at`'s carry-to-place leg had the same single-jump problem,
+     plus two more found by tracing contact/orientation per waypoint: a
+     diagonal straight-line carry clipped the target container's rim
+     partway through (knocking the object loose before the gripper ever
+     opened, yet still landing close enough to pass the old xy-only
+     `VERIFY_DONE` check); and re-targeting a fresh destination-facing
+     gripper orientation mid-carry tipped the held object independent of
+     any collision, because a 2-finger gripper's roll=0/roll=pi solutions
+     are both valid IK branches and which one is analytic-IK-reachable can
+     flip partway through an orientation sweep -- a genuine kinematic
+     transition, not seed noise (confirmed: chaining the IK seed
+     waypoint-to-waypoint didn't change the outcome). `release_at` now
+     plans the whole transit+descend as one joint-space waypoint list
+     (position linearly interpolated, orientation SLERPed from the held
+     frame to the destination frame) and executes it through the existing
+     velocity-limited `follow_joint_waypoints`, so any large per-waypoint
+     jump gets smoothed instead of snapped.
+  3. The fixed `container_release_z_offset: 0.07` left only ~5mm of
+     clearance above the container rim for a horizontally side-grasped cup
+     (half its height hangs below the grip point) -- razor-thin against
+     normal settle error, and what let the object clip the rim in the
+     first place. `executor._dynamic_container_release_z` now computes the
+     release height from the container's and held object's actual
+     collision geometry (`SimWorld.collision_z_range`) plus a configurable
+     safety margin (`place.release_clearance_margin`), instead of a fixed
+     constant.
 
-  **Important: this is a sim-only workaround, not a real-hardware-ready
-  fix.** `piper_real` + analytic IK (`--model real`) is the only path meant
-  to transfer to the physical Piper (DH parameters matched to the real arm,
-  `piper_arm.solve_ik` is what would run on hardware); `menagerie` is a
-  MuJoCo Menagerie community model with no real-robot counterpart --
-  joint trajectories computed on it cannot be replayed on hardware. A demo
-  recorded with the `menagerie` default only demonstrates the task
-  succeeding in simulation, not sim2real readiness. The IK solver itself
-  isn't in question here (DEVLOG records `solve_ik` at a 97% solve rate and
-  DH-FK matching the real arm to <0.1mm) -- the bug is specifically in
-  `execute_grasp`'s pre-grasp motion and the branch-selection heuristic
-  around it, which is a scoped, well-understood fix, not a reason to
-  distrust the analytic IK path generally. `--model real` still exists and
-  can be requested explicitly, but is a known-broken path for any task that
-  releases an object
-  (`place_at`/`place_into`/`clear_table`) until someone fixes the
-  approach-path/IK-branch-selection issue in `visual_grasp` itself.
+  Verified via the full LLM -> bridge -> MuJoCo pipeline (live viewer and
+  offline evidence capture): `--model real` `place_into`/`place_at` now
+  succeed deterministically across repeated runs and multiple starting arm
+  poses, with no regression on the `--model menagerie` default path. The
+  CLI default is still `menagerie` (this change didn't touch that), and
+  hardware-in-the-loop is still unverified -- everything above was checked
+  in MuJoCo, not on the physical Piper. `clear_table`'s bottle leg still
+  fails at `DETECT_SOURCE` on both models; that's a separate, pre-existing
+  issue unrelated to this fix.
