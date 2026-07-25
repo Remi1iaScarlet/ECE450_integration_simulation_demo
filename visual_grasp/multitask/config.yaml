@@ -130,6 +130,11 @@ motion:
 
 place:
   surface_release_z_offset: 0.05   # height above a surface target to release
-  container_release_z_offset: 0.07  # height above a container center to release
+  container_release_z_offset: 0.07  # container fallback only -- used when the held
+                             # object's/container's collision geometry can't be read
+                             # (see executor._dynamic_container_release_z, which
+                             # normally computes this from actual rim height + how
+                             # far the held object hangs below the grip point)
+  release_clearance_margin: 0.02  # safety gap above the container rim, dynamic case
   xy_tolerance: 0.09         # max base-xy distance object<->target to count as placed
                              # (~bowl radius; "into the bowl" allows landing anywhere inside)

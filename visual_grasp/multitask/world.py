@@ -319,3 +319,34 @@ class SimWorld:
         """World z of a named body (ground truth; used only for grasp verification)."""
         pos = self.body_pos(name)
         return float(pos[2]) if pos is not None else None
+
+    def collision_z_range(self, name):
+        """(zmin, zmax) world-frame vertical extent of a body's active (collidable)
+        geoms -- e.g. the actual rim height of a container, or how far a held
+        object extends below its own center. Assumes each geom is z-axis-aligned
+        with its body, true for every prop in this scene (same assumption
+        measure_table_clearance already makes for the table)."""
+        bid = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_BODY, name)
+        if bid < 0:
+            return None
+        zmin = zmax = None
+        for gid in range(self.model.ngeom):
+            if self.model.geom_bodyid[gid] != bid:
+                continue
+            if not (self.model.geom_contype[gid] or self.model.geom_conaffinity[gid]):
+                continue  # decorative-only geom (contype=0 conaffinity=0), doesn't collide
+            gtype = self.model.geom_type[gid]
+            size = self.model.geom_size[gid]
+            if gtype == mujoco.mjtGeom.mjGEOM_BOX:
+                half_z = float(size[2])
+            elif gtype in (mujoco.mjtGeom.mjGEOM_CYLINDER, mujoco.mjtGeom.mjGEOM_CAPSULE):
+                half_z = float(size[1])
+            elif gtype == mujoco.mjtGeom.mjGEOM_SPHERE:
+                half_z = float(size[0])
+            else:
+                half_z = float(self.model.geom_rbound[gid])  # conservative fallback (mesh etc.)
+            center_z = float(self.data.geom_xpos[gid][2])
+            lo, hi = center_z - half_z, center_z + half_z
+            zmin = lo if zmin is None else min(zmin, lo)
+            zmax = hi if zmax is None else max(zmax, hi)
+        return None if zmin is None else (zmin, zmax)

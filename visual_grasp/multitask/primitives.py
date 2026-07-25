@@ -11,6 +11,7 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 import mujoco
+from scipy.spatial.transform import Rotation, Slerp
 
 os.environ.setdefault("MUJOCO_GL", "egl")
 
@@ -61,14 +62,37 @@ def plan_horizontal_grasp(center_base, cfg):
     return grasp, grasp_mat, pre, lift
 
 
-def move_to(world, pos, mat=None, grip=None, steps=700):
-    """Solve IK to a target and drive the arm there. Fails loudly if IK diverges."""
+def move_to(world, pos, mat=None, grip=None, steps=700,
+            pos_tol=0.004, max_settle_steps=3000):
+    """Solve IK to a target and drive the arm there. Fails loudly if IK diverges.
+
+    A fixed settle-step budget alone does not guarantee the position actuators
+    actually reach ``q`` -- how far the PD controller lags behind the target at
+    that point depends on the arm's prior pose/momentum, not just on the target
+    itself. For a horizontal pinch grasp a few mm of leftover tracking error is
+    enough to close off-center and drop the object, while ``ik_target`` having
+    "converged" (found *a* solution) says nothing about whether the arm
+    actually got there. So keep settling in bounded extra batches until the
+    TCP is actually within ``pos_tol`` of the target, and fail loudly (instead
+    of silently proceeding to close the gripper) if it never does.
+    """
     q, ok = grasp_sim.ik_target(world.model, world.data, world.tcp, pos, mat,
                                 use_analytic=world.use_analytic_ik)
     if not ok:
         return result(False, f"IK did not converge for target {np.round(pos, 3)}")
     world.set_arm(q, grip, steps)
-    return result(True, "moved", tcp=world.tcp_pos())
+    total = steps
+    while (np.linalg.norm(world.tcp_pos() - pos) > pos_tol
+           and total < max_settle_steps):
+        batch = min(200, max_settle_steps - total)
+        world.settle(batch)
+        total += batch
+    err = float(np.linalg.norm(world.tcp_pos() - pos))
+    if err > pos_tol:
+        return result(False,
+                      f"settled {err * 1000:.1f}mm from target {np.round(pos, 3)} "
+                      f"after {total} steps (never converged)", tcp=world.tcp_pos())
+    return result(True, "moved", tcp=world.tcp_pos(), settle_steps=total)
 
 
 def open_gripper(world, steps=400):
@@ -88,10 +112,25 @@ def execute_grasp(world, grasp, grasp_mat, pre, lift, solutions=None):
     gripper frame is only enforced at the grasp/lift, matching the validated
     sim/grasp_sim_camera.py sequence -- constraining the approach orientation makes
     the arm clip the object on the way in.
+
+    The pre-approach and lift legs go through carry_to (Cartesian-interpolated)
+    only on the analytic-IK (piper_real) model. A raw single jump's PD-driven
+    path is uncontrolled and can sweep the still-open gripper through the
+    object before the grasp starts, or fling a held object out on the way up
+    (see DEVLOG piper_real place_into bug) -- confirmed root cause on
+    piper_real. But a straight Cartesian line is not a universally safe
+    replacement: on the menagerie model's home pose, a straight line down to
+    `pre` clips the object from a *different* direction than the joint jump
+    did, so forcing carry_to there regressed a previously-working path
+    (caught by re-running the real end-to-end demo, not just an isolated
+    repro -- see DEVLOG). Until there's a real collision-aware approach path,
+    keep the single-jump behavior on menagerie, which is verified working.
     """
     if solutions:
         world.set_arm(solutions["pre"], grasp_sim.GRIP_OPEN, 700)
         r = result(True, "moved to planned pre-grasp")
+    elif world.use_analytic_ik:
+        r = carry_to(world, pre, None, grip=grasp_sim.GRIP_OPEN)
     else:
         r = move_to(world, pre, None, grasp_sim.GRIP_OPEN, steps=700)
     if not r["success"]:
@@ -107,6 +146,8 @@ def execute_grasp(world, grasp, grasp_mat, pre, lift, solutions=None):
     if solutions:
         world.set_arm(solutions["lift"], steps=900)
         r = result(True, "moved to planned lift")
+    elif world.use_analytic_ik:
+        r = carry_to(world, lift, grasp_mat)
     else:
         r = move_to(world, lift, grasp_mat, steps=900)
     if not r["success"]:
@@ -266,10 +307,17 @@ def pick_object(world, obj, cfg):
     return execute_grasp(world, grasp, grasp_mat, pre, lift)
 
 
-def carry_to(world, target, mat, n_waypoints=6, steps=200):
-    """Move the TCP to target through interpolated waypoints with the gripper held
-    closed. A single large jump snaps the arm and flings the held object out, so the
-    carry is split into small steps that keep the grip intact."""
+def carry_to(world, target, mat, n_waypoints=6, steps=200, grip=None):
+    """Move the TCP to target through interpolated Cartesian waypoints, holding
+    ``grip`` fixed (defaults to closed, for carrying a held object). A single
+    large jump snaps the arm through whatever lies in between -- for a closed
+    grip that flings the held object out, and for an open grip (the pre-grasp
+    approach) it sweeps the fingers straight through the target object before
+    the grasp sequence even starts, which can pin the finger joints past their
+    own range and never release. Splitting the path into small Cartesian steps
+    keeps the arm close to a straight line and avoids both."""
+    if grip is None:
+        grip = grasp_sim.GRIP_CLOSE
     start = world.tcp_pos()
     target = np.asarray(target, dtype=float)
     for i in range(1, n_waypoints + 1):
@@ -278,18 +326,64 @@ def carry_to(world, target, mat, n_waypoints=6, steps=200):
                                     use_analytic=world.use_analytic_ik)
         if not ok:
             return result(False, f"carry IK diverged at waypoint {i}/{n_waypoints}")
-        world.set_arm(q, grasp_sim.GRIP_CLOSE, steps)
+        world.set_arm(q, grip, steps)
     return result(True, "carried", tcp=world.tcp_pos())
 
 
-def release_at(world, point_base, z_offset):
+def release_at(world, point_base, z_offset, n_waypoints=9,
+                max_joint_velocity_rad_s=0.5):
     """Place the held object: carry above the point (gripper held horizontal so the
-    object does not tip out), open, then retreat."""
+    object does not tip out), open, then retreat.
+
+    The carry is two legs -- horizontal at a safe height, then straight down --
+    not one diagonal line. A single diagonal carry_to from wherever the lift
+    left off to `above` clips whatever sits at an intermediate height along
+    that line: verified on piper_real place_into, the held object hit the
+    target bowl's rim partway through the diagonal and was knocked loose
+    before the gripper ever opened, yet still landed close enough afterward to
+    pass the xy-only VERIFY_DONE check (see DEVLOG).
+
+    The horizontal leg also SLERPs the gripper orientation from "however the
+    object is actually being held" to the destination-facing frame across all
+    waypoints, instead of snapping to it in one step or never reorienting (the
+    latter breaks far-off-heading place_at targets, where the pick orientation
+    isn't a reachable/sane pose at the destination). But a smooth CARTESIAN
+    orientation sweep does not guarantee a smooth JOINT-space path: a 2-finger
+    gripper's closing axis is a line, so two wrist rolls (0 and pi apart) are
+    equally valid for "the same" grasp orientation, and which one is analytic
+    IK-reachable can flip partway through the sweep -- verified on piper_real
+    this is a genuine kinematic transition (locking one roll for the whole
+    sequence makes the later waypoints unsolvable), not just seed noise.
+    Forcing that transition through in a single settle snaps the wrist ~180
+    degrees and flings the held object. So the whole transit+descend is
+    solved as one joint-space plan up front, then executed through
+    follow_joint_waypoints, which velocity-limits however large that
+    per-waypoint jump turns out to be instead of snapping to it.
+    """
     above = np.asarray(point_base, dtype=float) + np.array([0.0, 0.0, z_offset])
-    mat = grasp_sim.horizontal_grasp_frame(above)
-    r = carry_to(world, above, mat)
-    if not r["success"]:
-        return result(False, "carry-above: " + r["message"])
+    carry_mat = np.array(world.data.site_xmat[world.tcp]).reshape(3, 3).copy()
+    target_mat = grasp_sim.horizontal_grasp_frame(above)
+    transit = np.array([above[0], above[1],
+                        max(float(world.tcp_pos()[2]), float(above[2]))])
+    slerp = Slerp([0.0, 1.0], Rotation.from_matrix([carry_mat, target_mat]))
+    start = world.tcp_pos().copy()
+    cartesian = ([(start + (transit - start) * (i / n_waypoints),
+                   slerp(i / n_waypoints).as_matrix())
+                  for i in range(1, n_waypoints + 1)] +
+                 [(above, target_mat)])
+    q_waypoints = [np.array(world.data.qpos[:6], float)]
+    for i, (wp, wp_mat) in enumerate(cartesian, start=1):
+        q, ok = grasp_sim.ik_target(world.model, world.data, world.tcp, wp, wp_mat,
+                                    use_analytic=world.use_analytic_ik)
+        if not ok:
+            return result(False, f"carry-to-place IK diverged at waypoint {i}")
+        q_waypoints.append(np.asarray(q, float))
+    try:
+        world.follow_joint_waypoints(
+            q_waypoints, grip=grasp_sim.GRIP_CLOSE,
+            max_joint_velocity_rad_s=max_joint_velocity_rad_s, phase="PLACE_TRANSIT")
+    except MotionSafetyError as exc:
+        return result(False, f"carry-to-place: {exc}")
     open_gripper(world)
     r = move_to(world, above + np.array([0.0, 0.0, 0.05]), None, steps=500)
     if not r["success"]:

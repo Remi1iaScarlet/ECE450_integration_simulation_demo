@@ -356,10 +356,38 @@ class TaskExecutor:
         return primitives.result(True, f"target container {target['id']} "
                                        f"base={np.round(target['center_base'], 3)}")
 
+    def _dynamic_container_release_z(self, ctx):
+        """Safe container release height: clear the container's actual rim by a
+        margin, accounting for how far the held object really extends below the
+        grip point -- not a fixed constant. A fixed offset implicitly assumes
+        the object hangs entirely below the grip (true for a top-down grasp),
+        but a horizontal side grasp holds the object at roughly its own
+        mid-height, so half the object still hangs below the grip point. On
+        piper_real this left only ~5mm of clearance above the bowl rim with the
+        old fixed 0.07m offset, which the held cup's bottom edge reliably
+        clipped on the way down, tipping it over instead of dropping in
+        cleanly (see DEVLOG). Returns None (caller falls back to the static
+        config value) if either body's collision geometry can't be found.
+        """
+        container_range = self.world.collision_z_range(
+            self._body_name(ctx["container"]["label"]))
+        object_range = self.world.collision_z_range(
+            self._body_name(ctx["object"]["label"]))
+        if container_range is None or object_range is None:
+            return None
+        grip_to_bottom = self.world.tcp_pos()[2] - object_range[0]
+        margin = self.cfg["place"].get("release_clearance_margin", 0.02)
+        required_tcp_z = container_range[1] + grip_to_bottom + margin
+        return float(required_tcp_z - ctx["place_xyz"][2])
+
     def _st_plan_place(self, ctx):
         key = ("container_release_z_offset" if ctx["place_kind"] == "container"
                else "surface_release_z_offset")
         ctx["release_z"] = self.cfg["place"][key]
+        if ctx["place_kind"] == "container":
+            dynamic = self._dynamic_container_release_z(ctx)
+            if dynamic is not None:
+                ctx["release_z"] = dynamic
         ctx["place_point"] = ctx["place_xyz"]
         return primitives.result(
             True, f"release above {np.round(ctx['place_point'], 3)} +{ctx['release_z']:.2f}m")

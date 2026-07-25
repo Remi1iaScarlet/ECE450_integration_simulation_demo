@@ -8,6 +8,8 @@ This repo combines three ECE450 capstone teammates' repositories. It does
 not replace any of them -- see [CREDITS.md](CREDITS.md) for exact source
 commits and what was changed.
 
+![place_into demo: LLM intent -> visual_grasp -> the cup ends up in the bowl](visual_grasp/multitask/evidence/bridge_place_into_cup.gif)
+
 ## Architecture
 
 ```text
