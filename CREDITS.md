@@ -41,7 +41,8 @@ below, then only the files listed under "Modifications" were changed.
 
 ## `visual_grasp/` -- visual_grasp
 
-- Authors: chuhan (Remi1iaScarlet), runhanw, Valttery, and team
+- Authors: chuhan (Remi1iaScarlet), runhanw, Valttery, zenghao (skywalkertzh),
+  and team
 - Source: https://github.com/runhanw/visual_grasp (branch `main`)
 - Commit: `e79999ab11420622c7c1248a5a5e5969752e0c4c` (2026-07-22, "Add
   validated grasp planning and Piper backend")
