@@ -11,7 +11,10 @@ commits and what was changed.
 ![place_into demo: LLM intent -> visual_grasp -> the cup ends up in the bowl](visual_grasp/multitask/evidence/bridge_place_into_cup.gif)
 
 *Recorded with `--model real` (analytic IK, DH-matched to the physical
-Piper) -- not the `menagerie` default, which has no real-robot counterpart.*
+Piper) -- not the `menagerie` default, which has no real-robot counterpart --
+and `--perception yolo` (real YOLO detection on the rendered wrist-cam image,
+not the ground-truth `sim_gt` shortcut): `DETECT_SOURCE conf=0.50 (483 ROI
+pts)`, not the `conf=1.00 (0 ROI pts)` signature `sim_gt` always reports.*
 
 ## Architecture
 
@@ -211,3 +214,36 @@ CREDITS.md      exact source commits + what was changed
   in MuJoCo, not on the physical Piper. `clear_table`'s bottle leg still
   fails at `DETECT_SOURCE` on both models; that's a separate, pre-existing
   issue unrelated to this fix.
+
+- **`--perception yolo` (real detection, not `sim_gt`) now works end-to-end
+  on `--model real`, but only after two more fixes, and still has an open
+  gap on `--model menagerie`**: `run_demo.py`/the web-UI pipeline default to
+  `--perception sim_gt` (reads MuJoCo body poses directly), so every demo
+  gif before this entry -- including the one above, originally -- was
+  ground-truth-driven, not vision-driven. Getting `--perception yolo` to
+  actually succeed surfaced two separate pre-existing bugs, both in
+  `object_registry.scan`'s continuous-motion scan path (`multitask/
+  object_registry.py`, `motion.execution_mode: continuous` in
+  `config.yaml`), not in anything the piper_real fix above touched:
+  - `motion.scan_max_joint_velocity_rad_s: 0.8` was fast enough that the
+    `SAFE_TRANSIT` move's tracking error marginally exceeded
+    `max_following_error_rad` and raised `MotionSafetyError`, and (on
+    `--model real`) the resulting motion blur/incomplete settle at capture
+    time was enough to shift the detected container position by an extra
+    ~18mm. Lowered to `0.5`; both symptoms went away together.
+  - The `detector.scan_poses` default (used whenever a model doesn't
+    override it -- currently only `--model real` does) puts `link7` in
+    actual contact with the table at both poses (verified directly via
+    `SimWorld.measure_table_clearance`), which `continuous` mode's
+    clearance check correctly rejects. `--model menagerie` + `--perception
+    yolo` still fails on this (`SCAN robot-table contact while settling`)
+    for `pick` and every other task -- the generic scan poses need
+    retuning the same way `model.real.scan_poses` already were (see that
+    entry's comment in `config.yaml`), not attempted here.
+
+  With both fixes, `--model real` + `--perception yolo` `place_into`
+  succeeds deterministically (`DETECT_SOURCE conf=0.50`, container detected
+  ~52mm from its true center, under the 90mm `xy_tolerance`) -- verified
+  repeatedly, not a one-off. The README gif above was re-recorded with this
+  exact combination. 52mm against a 90mm budget is a real margin, not a
+  wide one; it hasn't been stress-tested across other object positions.

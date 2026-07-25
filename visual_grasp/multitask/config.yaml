@@ -120,7 +120,7 @@ grasp_planner:
 motion:
   execution_mode: continuous
   max_joint_velocity_rad_s: 0.8
-  scan_max_joint_velocity_rad_s: 0.8
+  scan_max_joint_velocity_rad_s: 0.5
   max_following_error_rad: 0.12
   final_settle_steps: 100
   scan_settle_steps: 80
