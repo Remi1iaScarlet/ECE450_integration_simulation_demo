@@ -8,6 +8,14 @@ This repo combines three ECE450 capstone teammates' repositories. It does
 not replace any of them -- see [CREDITS.md](CREDITS.md) for exact source
 commits and what was changed.
 
+**Status**: the core pipeline above works end to end for this task --
+verified through the actual web UI (type a command, approve it) into a live
+MuJoCo viewer, not just an offline script. See [Known gaps](#known-gaps--next-steps)
+for what's still narrow: object detection is solid for the cup but not the
+bottle, `--model menagerie` + `--perception yolo` doesn't work yet, and the
+container-detection margin (`--model real` + `--perception yolo`) is real
+but not wide.
+
 ![place_into demo: LLM intent -> visual_grasp -> the cup ends up in the bowl](visual_grasp/multitask/evidence/bridge_place_into_cup.gif)
 
 *Recorded with `--model real` (analytic IK, DH-matched to the physical
