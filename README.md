@@ -10,6 +10,9 @@ commits and what was changed.
 
 ![place_into demo: LLM intent -> visual_grasp -> the cup ends up in the bowl](visual_grasp/multitask/evidence/bridge_place_into_cup.gif)
 
+*Recorded with `--model real` (analytic IK, DH-matched to the physical
+Piper) -- not the `menagerie` default, which has no real-robot counterpart.*
+
 ## Architecture
 
 ```text
